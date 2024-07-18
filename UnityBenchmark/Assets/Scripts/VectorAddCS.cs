@@ -113,6 +113,7 @@ public class VectorAddCS : MonoBehaviour
 
             if (_currentArraySizeIndex < _arraySizes.Count)
             {
+                ReleaseBuffers();
                 InitializeArrays(_arraySizes[_currentArraySizeIndex]);
             }
             else
@@ -129,9 +130,9 @@ public class VectorAddCS : MonoBehaviour
         _kernelHandle = _computeShader.FindKernel(_kernelName);
 
         // Get the number of threads per group from the compute shader
-        uint threadGroupSizeX, threadGroupSizeY, threadGroupSizeZ;
-        _computeShader.GetKernelThreadGroupSizes(_kernelHandle, out threadGroupSizeX, out threadGroupSizeY,
-            out threadGroupSizeZ);
+        uint threadGroupSizeX;
+        _computeShader.GetKernelThreadGroupSizes(_kernelHandle, out threadGroupSizeX, out _,
+            out _);
         _numThreadsX = threadGroupSizeX;
     }
 
