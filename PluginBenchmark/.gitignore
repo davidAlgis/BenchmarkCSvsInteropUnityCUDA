@@ -1,0 +1,58 @@
+# Personal ignore
+
+# Remove compilation commands.json that are linked to path, they have to be regenerated with premake
+**/compile_commands.json*
+**/.clangd*
+.vscode/
+
+
+*log.txt
+
+*.sublime-workspace
+
+# Visual Studio cache directory
+.vs/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
+*.aps
+# Gradle cache directory
+.cache/
+
+# Remove temp folder
+**/temp/*
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Bb]uild/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio 2017 auto generated files
+Generated\ Files/
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
