@@ -1,0 +1,11 @@
+#pragma kernel VectorAdd
+
+RWStructuredBuffer<float> Array1;
+RWStructuredBuffer<float> Array2;
+RWStructuredBuffer<float> Result;
+
+[numthreads(64,1,1)]
+void VectorAdd (uint3 id : SV_DispatchThreadID)
+{
+    Result[id.x] = Array1[id.x] + Array2[id.x];
+}
