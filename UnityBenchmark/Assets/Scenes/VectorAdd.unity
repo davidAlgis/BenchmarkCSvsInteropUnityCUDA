@@ -258,11 +258,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1804e20eed9ebc54aafe962ecf4092f4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _arrayLength: 5000000
+  _arraySizes: e803000010270000a086010040420f0080969800
+  _numSamplesPerSize: 100
   _computeShader: {fileID: 7200000, guid: c079d3bf2917e2447a40447e4f0a2fde, type: 3}
   _profileText: {fileID: 814532659}
+  _sizeArrayText: {fileID: 1367828938}
   _compareCPU: 0
   _randomizedEachFrame: 0
+  _timeAfterRecord: 5
 --- !u!4 &53567399
 Transform:
   m_ObjectHideFlags: 0
