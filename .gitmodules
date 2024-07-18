@@ -1,0 +1,3 @@
+[submodule "PluginBenchmark/Vendors/InteropUnityCUDA"]
+	path = PluginBenchmark/Vendors/InteropUnityCUDA
+	url = https://github.com/davidAlgis/InteropUnityCUDA.git
