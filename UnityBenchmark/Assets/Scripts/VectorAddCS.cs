@@ -27,6 +27,7 @@ public class VectorAddCS : MonoBehaviour
     private bool _randomizedEachFrame = true; // Controls whether to compute CPU sum and compare results
 
     [SerializeField] private float _timeAfterRecord = 5f; // Time in seconds to wait before recording profiling data
+    private readonly string _arraySizeName = "ArraySize";
 
     private readonly string _buffer1Name = "Array1";
     private readonly string _buffer2Name = "Array2";
@@ -130,8 +131,7 @@ public class VectorAddCS : MonoBehaviour
         _kernelHandle = _computeShader.FindKernel(_kernelName);
 
         // Get the number of threads per group from the compute shader
-        uint threadGroupSizeX;
-        _computeShader.GetKernelThreadGroupSizes(_kernelHandle, out threadGroupSizeX, out _,
+        _computeShader.GetKernelThreadGroupSizes(_kernelHandle, out uint threadGroupSizeX, out _,
             out _);
         _numThreadsX = threadGroupSizeX;
     }
@@ -149,6 +149,7 @@ public class VectorAddCS : MonoBehaviour
         _computeShader.SetBuffer(_kernelHandle, _buffer1Name, _buffer1);
         _computeShader.SetBuffer(_kernelHandle, _buffer2Name, _buffer2);
         _computeShader.SetBuffer(_kernelHandle, _bufferResultName, _resultBuffer);
+        _computeShader.SetInt(_arraySizeName, arraySize);
 
         if (_sizeArrayText != null)
         {
