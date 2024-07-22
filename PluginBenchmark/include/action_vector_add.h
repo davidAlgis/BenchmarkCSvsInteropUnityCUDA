@@ -17,18 +17,23 @@ namespace Benchmark
 class ActionVectorAdd : Action
 {
     public:
-    explicit ActionVectorAdd(void *bufferPtr, int sizeBuffer);
+    explicit ActionVectorAdd(void *array1, void *array2, void *arrayResult,
+                             int arraySize);
     int Start() override;
     int Update() override;
     int OnDestroy() override;
 
     private:
-    Buffer *_structBuffer;
+    Buffer *_array1;
+    Buffer *_array2;
+    Buffer *_arrayResult;
+    int _arraySize;
 };
 } // namespace Benchmark
 
 extern "C"
 {
     UNITY_INTERFACE_EXPORT Benchmark::ActionVectorAdd *UNITY_INTERFACE_API
-    createActionVectorAdd(void *bufferPtr, int size);
+    createActionVectorAdd(void *array1, void *array2, void *arrayResult,
+                          int arraySize);
 }
