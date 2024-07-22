@@ -25,9 +25,11 @@ endif()
 add_subdirectory(Vendors)
 
 # Define the executable target
-file(GLOB SOURCES "src/*.cpp" "src/*.cu")
+file(GLOB SOURCES "src/*.cpp")
+file(GLOB SOURCES_CU "src/kernels/*.cu")
+file(GLOB HEADER_CU "include/kernels/*.cuh")
 file(GLOB HEADER "include/*.h")
-add_library(BenchmarkPlugin SHARED ${SOURCES} ${HEADER})
+add_library(BenchmarkPlugin SHARED ${SOURCES} ${SOURCES_CU} ${HEADER} ${HEADER_CU})
 
 
 target_include_directories(BenchmarkPlugin PUBLIC
