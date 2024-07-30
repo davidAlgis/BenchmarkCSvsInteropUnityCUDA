@@ -13,9 +13,14 @@ public class ActionVectorAdd : ActionUnity.ActionUnity
     [DllImport(_dllbenchmarkPlugin)]
     private static extern IntPtr createActionVectorAdd(IntPtr array1, IntPtr array2, IntPtr arrayResult, int arraySize);
 
+    [DllImport(_dllbenchmarkPlugin)]
+    private static extern float retrieveLastExecTimeCuda(IntPtr action);
+
     // we create the object MyAction in constructor of MyActionUnity
     public ActionVectorAdd(ComputeBuffer array1, ComputeBuffer array2, ComputeBuffer arrayResult, int arraySize) =>
         // the pointer toward our object MyAction is set in _actionPtr
         _actionPtr = createActionVectorAdd(array1.GetNativeBufferPtr(), array2.GetNativeBufferPtr(),
             arrayResult.GetNativeBufferPtr(), arraySize);
+
+    public float RetrieveLastExecTimeCuda() => retrieveLastExecTimeCuda(_actionPtr);
 }

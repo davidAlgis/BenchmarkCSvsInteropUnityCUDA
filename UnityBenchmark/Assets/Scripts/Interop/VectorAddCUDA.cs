@@ -1,31 +1,29 @@
-using System.Collections.Generic;
 using ActionUnity;
 using UnityEngine;
 
 public class VectorAddCUDA : InteropHandler
 {
-    [SerializeField] private List<int> _arraySizes = new() { 1000, 10000, 100000 };
-    private ComputeBuffer _buffer1;
-    private ComputeBuffer _buffer2;
-
+    private ActionVectorAdd _actionVectorAdd;
     private string _currentActionName = "";
     private int _currentArraySizeIndex;
-    private ComputeBuffer _resultBuffer;
 
-    protected override void InitializeActions()
+    public void InitializeActionsAdd(int arraySize, ComputeBuffer buffer1, ComputeBuffer buffer2,
+        ComputeBuffer resultBuffer)
     {
-        _currentActionName = "vectorAdd" + _arraySizes[_currentArraySizeIndex];
-        ActionVectorAdd myAction = new(_buffer1, _buffer2, _resultBuffer, _arraySizes[_currentArraySizeIndex]);
-        RegisterActionUnity(myAction, _currentActionName);
+        _currentActionName = "vectorAdd" + arraySize;
+        _actionVectorAdd = new ActionVectorAdd(buffer1, buffer2, resultBuffer, arraySize);
+        RegisterActionUnity(_actionVectorAdd, _currentActionName);
         CallFunctionStartInAction(_currentActionName);
     }
 
-    protected override void UpdateActions()
+    public float ComputeSum()
     {
         CallFunctionUpdateInAction(_currentActionName);
+        float execTime = _actionVectorAdd.RetrieveLastExecTimeCuda();
+        return execTime;
     }
 
-    protected override void OnDestroyActions()
+    public void DestroyActionsAdd()
     {
         CallFunctionOnDestroyInAction(_currentActionName);
     }

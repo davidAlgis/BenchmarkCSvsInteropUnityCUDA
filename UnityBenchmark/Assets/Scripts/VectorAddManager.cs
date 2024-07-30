@@ -11,20 +11,27 @@ public class VectorAddManager : MonoBehaviour
     [SerializeField] private List<int> _arraySizes = new() { 1000, 10000, 100000 };
     [SerializeField] private int _numSamplesPerSize = 10000;
     [SerializeField] private ComputeShader _computeShader;
+    [SerializeField] private VectorAddCUDA _vectorAddCuda;
 
     [SerializeField]
-    private TextMeshProUGUI _profileText; // Reference to TextMeshPro component for displaying profiling info
+    private TextMeshProUGUI _profileTextCS; // Reference to TextMeshPro component for displaying CS profiling info
+
+    [SerializeField]
+    private TextMeshProUGUI _profileTextCUDA; // Reference to TextMeshPro component for displaying CUDA profiling info
+
+    [SerializeField]
+    private TextMeshProUGUI _profileTextDifference; // Reference to TextMeshPro component for displaying difference info
 
     [SerializeField]
     private TextMeshProUGUI _sizeArrayText; // Reference to TextMeshPro component for displaying array size
 
     [SerializeField] private bool _compareCPU = true; // Controls whether to compute CPU sum and compare results
 
-    [SerializeField]
-    private bool _randomizedEachFrame = true; // Controls whether to compute CPU sum and compare results
+    [SerializeField] private bool _randomizedEachFrame = true; // Controls whether to randomize arrays each frame
 
     [SerializeField] private float _timeAfterRecord = 5f; // Time in seconds to wait before recording profiling data
-    private readonly List<float> _executionTimes = new();
+    private readonly List<float> _executionTimesCS = new();
+    private readonly List<float> _executionTimesCUDA = new();
     private readonly List<ProfilingDataSum> _profilingResults = new();
 
     private float[] _array1;
@@ -39,7 +46,8 @@ public class VectorAddManager : MonoBehaviour
     private float[] _resultArray;
     private ComputeBuffer _resultBuffer;
     private float _startTime;
-    private float _totalExecutionTime;
+    private float _totalExecutionTimeCS;
+    private float _totalExecutionTimeCUDA;
 
     private VectorAddCS _vectorAddCompute;
 
@@ -51,6 +59,7 @@ public class VectorAddManager : MonoBehaviour
         InitializeBuffers(_arraySizes[_currentArraySizeIndex]);
         InitializeArrays(_arraySizes[_currentArraySizeIndex]);
         _vectorAddCompute.Init(_computeShader, _arraySizes[_currentArraySizeIndex], _buffer1, _buffer2, _resultBuffer);
+        _vectorAddCuda.InitializeActionsAdd(_arraySizes[_currentArraySizeIndex], _buffer1, _buffer2, _resultBuffer);
     }
 
     private void Update()
@@ -58,6 +67,17 @@ public class VectorAddManager : MonoBehaviour
         if (!_recordingStarted && Time.time - _startTime >= _timeAfterRecord)
         {
             _recordingStarted = true;
+        }
+        else
+        {
+            _buffer1.SetData(_array1);
+            _buffer2.SetData(_array2);
+
+            _vectorAddCompute.ComputeSum(_resultBuffer, ref _resultArray);
+            _vectorAddCuda.ComputeSum();
+            _profileTextCS.text = "Average Time CS: loading...";
+            _profileTextCUDA.text = "Average Time CUDA: loading...";
+            _profileTextDifference.text = "Difference: loading...";
         }
 
         if (_recordingStarted && _currentSampleCount < _numSamplesPerSize)
@@ -67,19 +87,23 @@ public class VectorAddManager : MonoBehaviour
                 InitializeArrays(_arraySizes[_currentArraySizeIndex]);
             }
 
-            float gpuExecutionTime = _vectorAddCompute.ComputeSum(_resultBuffer, ref _resultArray);
+            _buffer1.SetData(_array1);
+            _buffer2.SetData(_array2);
+
+            float gpuExecutionTimeCS = _vectorAddCompute.ComputeSum(_resultBuffer, ref _resultArray);
+            float gpuExecutionTimeCUDA = _vectorAddCuda.ComputeSum();
 
             if (_compareCPU)
             {
                 float[] cpuSum = ComputeCPUSum();
                 bool isEqual = CompareResults(cpuSum);
-                if (isEqual == false)
+                if (!isEqual)
                 {
                     Debug.LogError("GPU and CPU results do not match!");
                 }
             }
 
-            UpdateProfilingInfo(gpuExecutionTime);
+            UpdateProfilingInfo(gpuExecutionTimeCS, gpuExecutionTimeCUDA);
             _currentSampleCount++;
         }
         else if (_currentSampleCount >= _numSamplesPerSize)
@@ -88,8 +112,10 @@ public class VectorAddManager : MonoBehaviour
             SaveProfilingDataSum();
 
             _currentSampleCount = 0;
-            _executionTimes.Clear();
-            _totalExecutionTime = 0;
+            _executionTimesCS.Clear();
+            _executionTimesCUDA.Clear();
+            _totalExecutionTimeCS = 0;
+            _totalExecutionTimeCUDA = 0;
             _executionCount = 0;
 
             _currentArraySizeIndex++;
@@ -100,6 +126,8 @@ public class VectorAddManager : MonoBehaviour
                 InitializeBuffers(_arraySizes[_currentArraySizeIndex]);
                 InitializeArrays(_arraySizes[_currentArraySizeIndex]);
                 _vectorAddCompute.Init(_computeShader, _arraySizes[_currentArraySizeIndex], _buffer1, _buffer2,
+                    _resultBuffer);
+                _vectorAddCuda.InitializeActionsAdd(_arraySizes[_currentArraySizeIndex], _buffer1, _buffer2,
                     _resultBuffer);
             }
             else
@@ -171,18 +199,31 @@ public class VectorAddManager : MonoBehaviour
         return isEqual;
     }
 
-    private void UpdateProfilingInfo(float executionTime)
+    private void UpdateProfilingInfo(float executionTimeCS, float executionTimeCUDA)
     {
-        _executionTimes.Add(executionTime);
-        _totalExecutionTime += executionTime;
+        _executionTimesCS.Add(executionTimeCS);
+        _executionTimesCUDA.Add(executionTimeCUDA);
+        _totalExecutionTimeCS += executionTimeCS;
+        _totalExecutionTimeCUDA += executionTimeCUDA;
         _executionCount++;
 
-        float averageTime = _totalExecutionTime / _executionCount;
+        float averageTimeCS = _totalExecutionTimeCS / _executionCount;
+        float averageTimeCUDA = _totalExecutionTimeCUDA / _executionCount;
+        float difference = averageTimeCS - averageTimeCUDA;
 
-        if (_profileText != null)
+        if (_profileTextCS != null)
         {
-            _profileText.text =
-                $"Average Time CS: {averageTime:F3} ms";
+            _profileTextCS.text = $"Average Time CS: {averageTimeCS:F3} ms";
+        }
+
+        if (_profileTextCUDA != null)
+        {
+            _profileTextCUDA.text = $"Average Time CUDA: {averageTimeCUDA:F3} ms";
+        }
+
+        if (_profileTextDifference != null)
+        {
+            _profileTextDifference.text = $"Difference: {difference:F3} ms";
         }
     }
 
@@ -190,30 +231,50 @@ public class VectorAddManager : MonoBehaviour
     {
         if (_executionCount > 0)
         {
-            float overallAverage = _totalExecutionTime / _executionCount;
+            float overallAverageCS = _totalExecutionTimeCS / _executionCount;
+            float overallAverageCUDA = _totalExecutionTimeCUDA / _executionCount;
 
-            float sumOfSquaredDifferences = 0f;
-            foreach (float time in _executionTimes)
+            float sumOfSquaredDifferencesCS = 0f;
+            foreach (float time in _executionTimesCS)
             {
-                float difference = time - overallAverage;
-                sumOfSquaredDifferences += difference * difference;
+                float difference = time - overallAverageCS;
+                sumOfSquaredDifferencesCS += difference * difference;
             }
 
-            float variance = sumOfSquaredDifferences / _executionCount;
-            float standardDeviation = Mathf.Sqrt(variance);
+            float varianceCS = sumOfSquaredDifferencesCS / _executionCount;
+            float standardDeviationCS = Mathf.Sqrt(varianceCS);
+
+            float sumOfSquaredDifferencesCUDA = 0f;
+            foreach (float time in _executionTimesCUDA)
+            {
+                float difference = time - overallAverageCUDA;
+                sumOfSquaredDifferencesCUDA += difference * difference;
+            }
+
+            float varianceCUDA = sumOfSquaredDifferencesCUDA / _executionCount;
+            float standardDeviationCUDA = Mathf.Sqrt(varianceCUDA);
 
             Debug.Log($"Compute Shader Profiling Summary for Array Size {_arraySizes[_currentArraySizeIndex]}:" +
                       $" Samples: {_executionCount}" +
-                      $", Average Execution Time: {overallAverage:F3} ms" +
-                      $", Standard Deviation: {standardDeviation:F3} ms" +
-                      $", Variance: {variance:F3} ms^2");
+                      $", Average Execution Time (CS): {overallAverageCS:F3} ms" +
+                      $", Standard Deviation (CS): {standardDeviationCS:F3} ms" +
+                      $", Variance (CS): {varianceCS:F3} ms^2");
+
+            Debug.Log($"CUDA Profiling Summary for Array Size {_arraySizes[_currentArraySizeIndex]}:" +
+                      $" Samples: {_executionCount}" +
+                      $", Average Execution Time (CUDA): {overallAverageCUDA:F3} ms" +
+                      $", Standard Deviation (CUDA): {standardDeviationCUDA:F3} ms" +
+                      $", Variance (CUDA): {varianceCUDA:F3} ms^2");
 
             _profilingResults.Add(new ProfilingDataSum
             {
                 ArraySize = _arraySizes[_currentArraySizeIndex],
-                AverageExecutionTime = overallAverage,
-                StandardDeviation = standardDeviation,
-                Variance = variance,
+                AverageExecutionTimeCS = overallAverageCS,
+                StandardDeviationCS = standardDeviationCS,
+                VarianceCS = varianceCS,
+                AverageExecutionTimeCUDA = overallAverageCUDA,
+                StandardDeviationCUDA = standardDeviationCUDA,
+                VarianceCUDA = varianceCUDA,
                 SampleCount = _executionCount
             });
         }
@@ -221,24 +282,38 @@ public class VectorAddManager : MonoBehaviour
 
     private void SaveProfilingDataSum()
     {
-        float overallAverage = _totalExecutionTime / _executionCount;
+        float overallAverageCS = _totalExecutionTimeCS / _executionCount;
+        float overallAverageCUDA = _totalExecutionTimeCUDA / _executionCount;
 
-        float sumOfSquaredDifferences = 0f;
-        foreach (float time in _executionTimes)
+        float sumOfSquaredDifferencesCS = 0f;
+        foreach (float time in _executionTimesCS)
         {
-            float difference = time - overallAverage;
-            sumOfSquaredDifferences += difference * difference;
+            float difference = time - overallAverageCS;
+            sumOfSquaredDifferencesCS += difference * difference;
         }
 
-        float variance = sumOfSquaredDifferences / _executionCount;
-        float standardDeviation = Mathf.Sqrt(variance);
+        float varianceCS = sumOfSquaredDifferencesCS / _executionCount;
+        float standardDeviationCS = Mathf.Sqrt(varianceCS);
+
+        float sumOfSquaredDifferencesCUDA = 0f;
+        foreach (float time in _executionTimesCUDA)
+        {
+            float difference = time - overallAverageCUDA;
+            sumOfSquaredDifferencesCUDA += difference * difference;
+        }
+
+        float varianceCUDA = sumOfSquaredDifferencesCUDA / _executionCount;
+        float standardDeviationCUDA = Mathf.Sqrt(varianceCUDA);
 
         _profilingResults.Add(new ProfilingDataSum
         {
             ArraySize = _arraySizes[_currentArraySizeIndex],
-            AverageExecutionTime = overallAverage,
-            StandardDeviation = standardDeviation,
-            Variance = variance,
+            AverageExecutionTimeCS = overallAverageCS,
+            StandardDeviationCS = standardDeviationCS,
+            VarianceCS = varianceCS,
+            AverageExecutionTimeCUDA = overallAverageCUDA,
+            StandardDeviationCUDA = standardDeviationCUDA,
+            VarianceCUDA = varianceCUDA,
             SampleCount = _executionCount
         });
     }
@@ -248,11 +323,13 @@ public class VectorAddManager : MonoBehaviour
         string filePath = Path.Combine(Application.dataPath, "ProfilingResults.csv");
         using (StreamWriter writer = new(filePath))
         {
-            writer.WriteLine("ArraySize;SampleCount;AverageExecutionTime;StandardDeviation;Variance");
+            writer.WriteLine(
+                "ArraySize;SampleCount;AverageExecutionTimeCS;StandardDeviationCS;VarianceCS;AverageExecutionTimeCUDA;StandardDeviationCUDA;VarianceCUDA;Difference");
             foreach (ProfilingDataSum data in _profilingResults)
             {
+                float difference = data.AverageExecutionTimeCS - data.AverageExecutionTimeCUDA;
                 writer.WriteLine(
-                    $"{data.ArraySize};{data.SampleCount};{data.AverageExecutionTime:F3};{data.StandardDeviation:F3};{data.Variance:F3}");
+                    $"{data.ArraySize};{data.SampleCount};{data.AverageExecutionTimeCS:F3};{data.StandardDeviationCS:F3};{data.VarianceCS:F3};{data.AverageExecutionTimeCUDA:F3};{data.StandardDeviationCUDA:F3};{data.VarianceCUDA:F3};{difference:F3}");
             }
         }
 
@@ -266,9 +343,15 @@ public class ProfilingDataSum
 
     public int SampleCount { get; set; }
 
-    public float AverageExecutionTime { get; set; }
+    public float AverageExecutionTimeCS { get; set; }
 
-    public float StandardDeviation { get; set; }
+    public float StandardDeviationCS { get; set; }
 
-    public float Variance { get; set; }
+    public float VarianceCS { get; set; }
+
+    public float AverageExecutionTimeCUDA { get; set; }
+
+    public float StandardDeviationCUDA { get; set; }
+
+    public float VarianceCUDA { get; set; }
 }
