@@ -10,6 +10,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(ROOT_PROJECT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
+set(UNITY_BENCHMARK_PLUGIN "${ROOT_PROJECT_DIR}/../UnityBenchmark/Assets/Plugin")
+
 set(PLUGIN_INTEROP_UNITY_CUDA "${CMAKE_CURRENT_SOURCE_DIR}/Vendors/interopUnityCUDA/Plugin")
 set(UTILITIES_INCLUDE "${PLUGIN_INTEROP_UNITY_CUDA}/Utilities/include")
 set(PLUGIN_INTEROP_INCLUDE "${PLUGIN_INTEROP_UNITY_CUDA}/PluginInteropUnityCUDA/include")
@@ -63,4 +65,12 @@ set_target_properties(BenchmarkPlugin PROPERTIES
     MINSIZEREL_OUTPUT_NAME "${PROJECT_NAME}"
     RELWITHDEBINFO_OUTPUT_NAME "${PROJECT_NAME}"
     LINKER_LANGUAGE CXX
+)
+
+
+# Copy the built library to UNITY_BENCHMARK_PLUGIN directory
+add_custom_command(TARGET BenchmarkPlugin POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    $<TARGET_FILE:BenchmarkPlugin>
+    ${UNITY_BENCHMARK_PLUGIN}/$<TARGET_FILE_NAME:BenchmarkPlugin>
 )
