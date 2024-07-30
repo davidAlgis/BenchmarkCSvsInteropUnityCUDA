@@ -4,5 +4,8 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/VectorAdd.unity
+    guid: e54f22a4822ad5843b32f68de238b716
   m_configObjects: {}
