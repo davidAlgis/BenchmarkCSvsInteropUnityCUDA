@@ -1,5 +1,6 @@
 #include "action_vector_add.h"
 #include "kernels/vector_add.cuh"
+#include <chrono>
 
 namespace Benchmark
 {
@@ -9,8 +10,10 @@ ActionVectorAdd::ActionVectorAdd(void *array1, void *array2, void *arrayResult,
 {
     _array1 = CreateBufferInterop(array1, arraySize);
     _array2 = CreateBufferInterop(array2, arraySize);
-    _arrayResult = CreateBufferInterop(arrayResult, arraySize);
+    d_arrayResult = CreateBufferInterop(arrayResult, arraySize);
+    h_arrayResult = new float[arraySize];
     _arraySize = arraySize;
+    _execTime = 0.0f;
 }
 
 int ActionVectorAdd::Start()
@@ -21,7 +24,7 @@ int ActionVectorAdd::Start()
     ret = _array2->registerBufferInCUDA();
     GRUMBLE(ret, "There has been an error during the registration of "
                  "the _array2 in CUDA. Abort ActionSampleStructBuffer !");
-    ret = _arrayResult->registerBufferInCUDA();
+    ret = d_arrayResult->registerBufferInCUDA();
     GRUMBLE(ret, "There has been an error during the registration of "
                  "the _arrayResult in CUDA. Abort ActionSampleStructBuffer !");
     return 0;
@@ -29,6 +32,7 @@ int ActionVectorAdd::Start()
 
 int ActionVectorAdd::Update()
 {
+    auto start = std::chrono::high_resolution_clock::now();
     float *array1 = nullptr;
     float *array2 = nullptr;
     float *arrayResult = nullptr;
@@ -40,7 +44,7 @@ int ActionVectorAdd::Update()
     GRUMBLE(ret, "There has been an error during the map of "
                  "the _array2 in CUDA. Abort ActionSampleStructBuffer !");
 
-    ret = _arrayResult->mapResources<float>(&arrayResult);
+    ret = d_arrayResult->mapResources<float>(&arrayResult);
     GRUMBLE(ret, "There has been an error during the map of "
                  "the _arrayResult in CUDA. Abort ActionSampleStructBuffer !");
 
@@ -52,9 +56,16 @@ int ActionVectorAdd::Update()
     ret = _array2->unmapResources();
     GRUMBLE(ret, "There has been an error during the unmap of "
                  "the _array2 in CUDA. Abort ActionSampleStructBuffer !");
-    ret = _arrayResult->unmapResources();
+    ret = d_arrayResult->unmapResources();
     GRUMBLE(ret, "There has been an error during the unmap of "
                  "the _arrayResult in CUDA. Abort ActionSampleStructBuffer !");
+
+    CUDA_CHECK_RETURN(cudaMemcpy(h_arrayResult, arrayResult,
+                                 sizeof(float) * _arraySize,
+                                 cudaMemcpyDeviceToHost));
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<float, std::milli> elapsed = end - start;
+    _execTime = elapsed.count();
     return 0;
 }
 
@@ -66,9 +77,10 @@ int ActionVectorAdd::OnDestroy()
     ret = _array2->unregisterBufferInCUDA();
     GRUMBLE(ret, "There has been an error during the unregistration of "
                  "the _array2 in CUDA. Abort ActionSampleStructBuffer !");
-    ret = _arrayResult->unregisterBufferInCUDA();
+    ret = d_arrayResult->unregisterBufferInCUDA();
     GRUMBLE(ret, "There has been an error during the unregistration of "
                  "the _arrayResult in CUDA. Abort ActionSampleStructBuffer !");
+    delete[] (h_arrayResult);
     return 0;
 }
 
@@ -82,5 +94,11 @@ extern "C"
     {
         return (new Benchmark::ActionVectorAdd(array1, array2, arrayResult,
                                                arraySize));
+    }
+
+    UNITY_INTERFACE_EXPORT float UNITY_INTERFACE_API
+    retrieveLastExecTimeCuda(Benchmark::ActionVectorAdd *actionPtr)
+    {
+        return actionPtr->getExecTime();
     }
 }

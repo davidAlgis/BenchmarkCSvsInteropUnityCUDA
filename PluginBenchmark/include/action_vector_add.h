@@ -23,11 +23,20 @@ class ActionVectorAdd : Action
     int Update() override;
     int OnDestroy() override;
 
+    [[nodiscard]] float getExecTime() const
+    {
+        return _execTime;
+    }
+
     private:
     Buffer *_array1;
     Buffer *_array2;
-    Buffer *_arrayResult;
+    Buffer *d_arrayResult;
+
+    float *h_arrayResult;
     int _arraySize;
+
+    float _execTime;
 };
 } // namespace Benchmark
 
@@ -36,4 +45,7 @@ extern "C"
     UNITY_INTERFACE_EXPORT Benchmark::ActionVectorAdd *UNITY_INTERFACE_API
     createActionVectorAdd(void *array1, void *array2, void *arrayResult,
                           int arraySize);
+
+    UNITY_INTERFACE_EXPORT float UNITY_INTERFACE_API
+    retrieveLastExecTimeCuda(Benchmark::ActionVectorAdd *actionPtr);
 }
