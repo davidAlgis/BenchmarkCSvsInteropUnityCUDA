@@ -26,6 +26,16 @@
 			"working_dir": "${project_path:${folder}}",
 		},
 		{
+			"name": "PluginBenchmark - Launch Unity",
+			"target": "terminus_exec",
+			"focus": true,
+			"timeit": false,
+			"file_regex": "^(..[^:]*):([0-9]+):?([0-9]+)?:? (.*)$",
+			"cancel": "terminus_cancel_build",
+			"shell_cmd": "\"C:\\Program Files\\Unity\\Hub\\Editor\\2022.3.8f1\\Editor\\Unity.exe\" -projectPath ${folder}}\\..\\UnityBenchmark",
+			"working_dir": "${project_path:${folder}}",
+		},
+		{
 			"name": "PluginBenchmark - Build - Launch Unity",
 			"target": "terminus_exec",
 			"focus": true,
