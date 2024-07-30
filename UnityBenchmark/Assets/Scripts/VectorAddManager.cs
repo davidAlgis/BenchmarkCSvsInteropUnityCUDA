@@ -41,6 +41,7 @@ public class VectorAddManager : MonoBehaviour
     private ComputeBuffer _buffer2;
     private int _currentArraySizeIndex;
     private int _currentSampleCount;
+    private bool _endTest;
     private int _executionCount;
     private bool _recordingStarted;
     private float[] _resultArray;
@@ -53,6 +54,7 @@ public class VectorAddManager : MonoBehaviour
 
     private void Start()
     {
+        _vectorAddCuda.InitializeInteropHandler();
         _startTime = Time.time;
         _recordingStarted = false;
         _vectorAddCompute = new VectorAddCS();
@@ -60,15 +62,24 @@ public class VectorAddManager : MonoBehaviour
         InitializeArrays(_arraySizes[_currentArraySizeIndex]);
         _vectorAddCompute.Init(_computeShader, _arraySizes[_currentArraySizeIndex], _buffer1, _buffer2, _resultBuffer);
         _vectorAddCuda.InitializeActionsAdd(_arraySizes[_currentArraySizeIndex], _buffer1, _buffer2, _resultBuffer);
+        // we execute vector add cuda once to have one execution time at least as the time retrieve is the one from the last frame
+        _vectorAddCuda.ComputeSum();
     }
 
     private void Update()
     {
+        if (_endTest)
+        {
+            _sizeArrayText.text = "Vector Add is done";
+            return;
+        }
+
         if (!_recordingStarted && Time.time - _startTime >= _timeAfterRecord)
         {
             _recordingStarted = true;
         }
-        else
+
+        if (_recordingStarted == false)
         {
             _buffer1.SetData(_array1);
             _buffer2.SetData(_array2);
@@ -82,14 +93,16 @@ public class VectorAddManager : MonoBehaviour
 
         if (_recordingStarted && _currentSampleCount < _numSamplesPerSize)
         {
+            int arraySize = _arraySizes[_currentArraySizeIndex];
+            _sizeArrayText.text = "Vector Add - " + arraySize + " - Sample " + _currentSampleCount + "/" +
+                                  _numSamplesPerSize;
             if (_randomizedEachFrame)
             {
-                InitializeArrays(_arraySizes[_currentArraySizeIndex]);
+                InitializeArrays(arraySize);
             }
 
             _buffer1.SetData(_array1);
             _buffer2.SetData(_array2);
-
             float gpuExecutionTimeCS = _vectorAddCompute.ComputeSum(_resultBuffer, ref _resultArray);
             float gpuExecutionTimeCUDA = _vectorAddCuda.ComputeSum();
 
@@ -109,7 +122,7 @@ public class VectorAddManager : MonoBehaviour
         else if (_currentSampleCount >= _numSamplesPerSize)
         {
             LogProfilingSummary();
-            SaveProfilingDataSum();
+            // SaveProfilingDataSum();
 
             _currentSampleCount = 0;
             _executionTimesCS.Clear();
@@ -118,11 +131,11 @@ public class VectorAddManager : MonoBehaviour
             _totalExecutionTimeCUDA = 0;
             _executionCount = 0;
 
+            ReleaseBuffers();
             _currentArraySizeIndex++;
 
             if (_currentArraySizeIndex < _arraySizes.Count)
             {
-                ReleaseBuffers();
                 InitializeBuffers(_arraySizes[_currentArraySizeIndex]);
                 InitializeArrays(_arraySizes[_currentArraySizeIndex]);
                 _vectorAddCompute.Init(_computeShader, _arraySizes[_currentArraySizeIndex], _buffer1, _buffer2,
@@ -134,7 +147,8 @@ public class VectorAddManager : MonoBehaviour
             {
                 Debug.Log("All tests completed.");
                 ExportToCsv();
-                enabled = false; // Stop the script
+                Application.Quit();
+                _endTest = true;
             }
         }
     }
@@ -157,6 +171,7 @@ public class VectorAddManager : MonoBehaviour
 
     private void ReleaseBuffers()
     {
+        _vectorAddCuda.DestroyActionsAdd();
         _buffer1.Release();
         _buffer2.Release();
         _resultBuffer.Release();
