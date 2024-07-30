@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "com.studio-nyx.interop-unity-cuda": {
-      "version": "file:D:/arc_blanc_these/Programmes/BenchmarkCSvsInteropUnityCUDA/PluginBenchmark/Vendors/InteropUnityCUDA/Plugin/buildtools/com.studio-nyx.interop-unity-cuda.1.0.1",
+      "version": "file:D:/arc_blanc_these/Programmes/BenchmarkCSvsInteropUnityCUDA/PluginBenchmark/Vendors/InteropUnityCUDA/com.studio-nyx.interop-unity-cuda.1.0.1",
       "depth": 0,
       "source": "local",
       "dependencies": {
