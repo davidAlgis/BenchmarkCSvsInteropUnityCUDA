@@ -283,7 +283,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 53567399}
-  - component: {fileID: 53567400}
+  - component: {fileID: 53567402}
   - component: {fileID: 53567401}
   m_Layer: 0
   m_Name: VectorAddScript
@@ -307,29 +307,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &53567400
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 53567397}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8ad665620449d5940a4a893b1ef89326, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _arraySizes: e803000010270000a086010040420f0080969800
-  _numSamplesPerSize: 1000
-  _computeShader: {fileID: 7200000, guid: c079d3bf2917e2447a40447e4f0a2fde, type: 3}
-  _vectorAddCuda: {fileID: 53567401}
-  _profileTextCS: {fileID: 814532659}
-  _profileTextCUDA: {fileID: 1379051417}
-  _profileTextDifference: {fileID: 1199873797}
-  _sizeArrayText: {fileID: 1367828938}
-  _compareCPU: 0
-  _randomizedEachFrame: 0
-  _timeAfterRecord: 5
 --- !u!114 &53567401
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -342,6 +319,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c0cbe08cb9a8d3343a66f0d4d5656f1b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &53567402
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 53567397}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ad665620449d5940a4a893b1ef89326, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _arraySizes: e8030000c4090000881300004c1d000010270000a861000050c30000f8240100a086010090d0030020a10700b0710b0040420f00a0252600404b4c00e070720080969800
+  _numSamplesPerSize: 10000
+  _computeShader: {fileID: 7200000, guid: c079d3bf2917e2447a40447e4f0a2fde, type: 3}
+  _vectorAddCuda: {fileID: 53567401}
+  _profileTextCS: {fileID: 814532659}
+  _profileTextCUDA: {fileID: 1379051417}
+  _profileTextDifference: {fileID: 1199873797}
+  _sizeArrayText: {fileID: 1367828938}
+  _compareCPU: 0
+  _randomizedEachFrame: 0
+  _waitTimeBeforeClocking: 30
 --- !u!1 &459145868
 GameObject:
   m_ObjectHideFlags: 0
