@@ -66,6 +66,12 @@ public class VectorAddManager : MonoBehaviour
     private int _executionCount;
 
     private bool _hasBeenRelease;
+    private float _maxExecutionTimeCS = float.MinValue;
+    private float _maxExecutionTimeCUDA = float.MinValue;
+
+    // Minimum and maximum execution times
+    private float _minExecutionTimeCS = float.MaxValue;
+    private float _minExecutionTimeCUDA = float.MaxValue;
     private bool _recordingStarted;
 
     // Arrays for storing results and timings
@@ -164,6 +170,10 @@ public class VectorAddManager : MonoBehaviour
             _totalExecutionTimeCS = 0;
             _totalExecutionTimeCUDA = 0;
             _executionCount = 0;
+            _minExecutionTimeCS = float.MaxValue;
+            _maxExecutionTimeCS = float.MinValue;
+            _minExecutionTimeCUDA = float.MaxValue;
+            _maxExecutionTimeCUDA = float.MinValue;
 
             // release memory
             ReleaseBuffers();
@@ -178,6 +188,9 @@ public class VectorAddManager : MonoBehaviour
                     _resultBuffer);
                 _vectorAddCuda.InitializeActionsAdd(_arraySizes[_currentArraySizeIndex], _buffer1, _buffer2,
                     _resultBuffer);
+                // Execute CUDA vector addition once to get an initial execution time
+                // (as we retrieve the variable with one frame late, if we don't do that we will retrieve 0 for the first frame)
+                _vectorAddCuda.ComputeSum();
             }
             else
             {
@@ -314,6 +327,28 @@ public class VectorAddManager : MonoBehaviour
         _totalExecutionTimeCUDA += executionTimeCUDA;
         _executionCount++;
 
+        // Update min and max execution times for CS
+        if (executionTimeCS < _minExecutionTimeCS)
+        {
+            _minExecutionTimeCS = executionTimeCS;
+        }
+
+        if (executionTimeCS > _maxExecutionTimeCS)
+        {
+            _maxExecutionTimeCS = executionTimeCS;
+        }
+
+        // Update min and max execution times for CUDA
+        if (executionTimeCUDA < _minExecutionTimeCUDA)
+        {
+            _minExecutionTimeCUDA = executionTimeCUDA;
+        }
+
+        if (executionTimeCUDA > _maxExecutionTimeCUDA)
+        {
+            _maxExecutionTimeCUDA = executionTimeCUDA;
+        }
+
         float averageTimeCS = _totalExecutionTimeCS / _executionCount;
         float averageTimeCUDA = _totalExecutionTimeCUDA / _executionCount;
         float difference = averageTimeCS - averageTimeCUDA;
@@ -371,6 +406,8 @@ public class VectorAddManager : MonoBehaviour
             Debug.Log($"Compute Shader Profiling Summary for Array Size {_arraySizes[_currentArraySizeIndex]}:" +
                       $" Samples: {_executionCount}" +
                       $", Average Execution Time (CS): {overallAverageCS:F3} ms" +
+                      $", Min Execution Time (CS): {_minExecutionTimeCS:F3} ms" +
+                      $", Max Execution Time (CS): {_maxExecutionTimeCS:F3} ms" +
                       $", Standard Deviation (CS): {standardDeviationCS:F3} ms" +
                       $", Variance (CS): {varianceCS:F3} ms^2");
 
@@ -378,6 +415,8 @@ public class VectorAddManager : MonoBehaviour
             Debug.Log($"CUDA Profiling Summary for Array Size {_arraySizes[_currentArraySizeIndex]}:" +
                       $" Samples: {_executionCount}" +
                       $", Average Execution Time (CUDA): {overallAverageCUDA:F3} ms" +
+                      $", Min Execution Time (CUDA): {_minExecutionTimeCUDA:F3} ms" +
+                      $", Max Execution Time (CUDA): {_maxExecutionTimeCUDA:F3} ms" +
                       $", Standard Deviation (CUDA): {standardDeviationCUDA:F3} ms" +
                       $", Variance (CUDA): {varianceCUDA:F3} ms^2");
 
@@ -388,9 +427,13 @@ public class VectorAddManager : MonoBehaviour
                 AverageExecutionTimeCS = overallAverageCS,
                 StandardDeviationCS = standardDeviationCS,
                 VarianceCS = varianceCS,
+                MinExecutionTimeCS = _minExecutionTimeCS,
+                MaxExecutionTimeCS = _maxExecutionTimeCS,
                 AverageExecutionTimeCUDA = overallAverageCUDA,
                 StandardDeviationCUDA = standardDeviationCUDA,
                 VarianceCUDA = varianceCUDA,
+                MinExecutionTimeCUDA = _minExecutionTimeCUDA,
+                MaxExecutionTimeCUDA = _maxExecutionTimeCUDA,
                 SampleCount = _executionCount
             });
         }
@@ -406,14 +449,14 @@ public class VectorAddManager : MonoBehaviour
         {
             // Write CSV header
             writer.WriteLine(
-                "ArraySize;SampleCount;AverageExecutionTimeCS;StandardDeviationCS;VarianceCS;AverageExecutionTimeCUDA;StandardDeviationCUDA;VarianceCUDA;Difference");
+                "ArraySize;SampleCount;AverageExecutionTimeCS;MinExecutionTimeCS;MaxExecutionTimeCS;StandardDeviationCS;VarianceCS;AverageExecutionTimeCUDA;MinExecutionTimeCUDA;MaxExecutionTimeCUDA;StandardDeviationCUDA;VarianceCUDA;Difference");
 
             // Write each profiling data entry
             foreach (ProfilingDataSum data in _profilingResults)
             {
                 float difference = data.AverageExecutionTimeCS - data.AverageExecutionTimeCUDA;
                 writer.WriteLine(
-                    $"{data.ArraySize};{data.SampleCount};{data.AverageExecutionTimeCS:F3};{data.StandardDeviationCS:F3};{data.VarianceCS:F3};{data.AverageExecutionTimeCUDA:F3};{data.StandardDeviationCUDA:F3};{data.VarianceCUDA:F3};{difference:F3}");
+                    $"{data.ArraySize};{data.SampleCount};{data.AverageExecutionTimeCS:F3};{data.MinExecutionTimeCS:F3};{data.MaxExecutionTimeCS:F3};{data.StandardDeviationCS:F3};{data.VarianceCS:F3};{data.AverageExecutionTimeCUDA:F3};{data.MinExecutionTimeCUDA:F3};{data.MaxExecutionTimeCUDA:F3};{data.StandardDeviationCUDA:F3};{data.VarianceCUDA:F3};{difference:F3}");
             }
         }
 
@@ -432,11 +475,19 @@ public class ProfilingDataSum
 
     public float AverageExecutionTimeCS { get; set; } // Average execution time for Compute Shader (CS)
 
+    public float MinExecutionTimeCS { get; set; } // Minimum execution time for Compute Shader (CS)
+
+    public float MaxExecutionTimeCS { get; set; } // Maximum execution time for Compute Shader (CS)
+
     public float StandardDeviationCS { get; set; } // Standard deviation for CS execution time
 
     public float VarianceCS { get; set; } // Variance for CS execution time
 
     public float AverageExecutionTimeCUDA { get; set; } // Average execution time for CUDA
+
+    public float MinExecutionTimeCUDA { get; set; } // Minimum execution time for CUDA
+
+    public float MaxExecutionTimeCUDA { get; set; } // Maximum execution time for CUDA
 
     public float StandardDeviationCUDA { get; set; } // Standard deviation for CUDA execution time
 
