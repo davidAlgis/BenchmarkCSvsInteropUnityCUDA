@@ -1,7 +1,7 @@
 #pragma kernel VectorAdd
 
-RWStructuredBuffer<float> Array1;
-RWStructuredBuffer<float> Array2;
+StructuredBuffer<float> Array1;
+StructuredBuffer<float> Array2;
 RWStructuredBuffer<float> Result;
 int ArraySize;
 
