@@ -10,6 +10,7 @@ int ArraySize;
 [numthreads(NUM_THREADS,1,1)]
 void VectorAdd(uint3 id : SV_DispatchThreadID)
 {
+    // Check if the thread ID is within the bounds of the array
     if (id.x < ArraySize)
     {
         Result[id.x] = Array1[id.x] + Array2[id.x];
