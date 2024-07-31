@@ -64,6 +64,8 @@ public class VectorAddManager : MonoBehaviour
     private int _currentArraySizeIndex;
     private int _currentSampleCount;
     private int _executionCount;
+
+    private bool _hasBeenRelease;
     private bool _recordingStarted;
 
     // Arrays for storing results and timings
@@ -193,6 +195,20 @@ public class VectorAddManager : MonoBehaviour
     }
 
     /// <summary>
+    ///     Make sure memory is correctly released
+    /// </summary>
+    private void OnDestroy()
+    {
+        // if the last initialization of buffer has not been released, we released 
+        // it can happen in unity editor when user quit the application before the 
+        // end of the test
+        if (!_hasBeenRelease)
+        {
+            ReleaseBuffers();
+        }
+    }
+
+    /// <summary>
     ///     Initializes the arrays for computation.
     /// </summary>
     /// <param name="arraySize">The size of the arrays to initialize.</param>
@@ -214,6 +230,7 @@ public class VectorAddManager : MonoBehaviour
     /// <param name="arraySize">The size of the buffers to initialize.</param>
     private void InitializeBuffers(int arraySize)
     {
+        _hasBeenRelease = false;
         // initialize the buffer to structured default type
         _buffer1 = new ComputeBuffer(arraySize, sizeof(float));
         _buffer2 = new ComputeBuffer(arraySize, sizeof(float));
@@ -225,6 +242,7 @@ public class VectorAddManager : MonoBehaviour
     /// </summary>
     private void ReleaseBuffers()
     {
+        _hasBeenRelease = true;
         // release the memory (for cuda and on unity side)
         _vectorAddCuda.DestroyActionsAdd();
         _buffer1.Release();
