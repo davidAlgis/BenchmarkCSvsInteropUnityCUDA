@@ -1,3 +1,12 @@
+/**
+ * @file action_vector_add.cpp
+ * @brief Implementation of action_vector_add.h
+ *
+ * @author David Algis
+ *
+ * company - Studio Nyx
+ * Copyright © Studio Nyx. All rights reserved.
+ */
 #include "action_vector_add.h"
 #include "kernels/vector_add.cuh"
 #include <chrono>
