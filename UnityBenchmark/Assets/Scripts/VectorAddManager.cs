@@ -57,8 +57,13 @@ public class VectorAddManager : MonoBehaviour
     private float[] _array2;
 
     // Compute buffers for GPU computation
-    private ComputeBuffer _buffer1;
-    private ComputeBuffer _buffer2;
+    private ComputeBuffer _buffer1CS;
+    private ComputeBuffer _buffer2CS;
+    private ComputeBuffer _resultBufferCS;
+
+    private ComputeBuffer _buffer1CUDA;
+    private ComputeBuffer _buffer2CUDA;
+    private ComputeBuffer _resultBufferCUDA;
 
     // Indices and counters for tracking progress
     private int _currentArraySizeIndex;
@@ -75,8 +80,7 @@ public class VectorAddManager : MonoBehaviour
     private bool _recordingStarted;
 
     // Arrays for storing results and timings
-    private float[] _resultArray;
-    private ComputeBuffer _resultBuffer;
+    private float[] _resultArrayCS;
     private float _startTime;
     private float _totalExecutionTimeCS;
     private float _totalExecutionTimeCUDA;
@@ -95,8 +99,8 @@ public class VectorAddManager : MonoBehaviour
         _vectorAddCompute = new VectorAddCS();
         InitializeBuffers(_arraySizes[_currentArraySizeIndex]);
         InitializeArrays(_arraySizes[_currentArraySizeIndex]);
-        _vectorAddCompute.Init(_computeShader, _arraySizes[_currentArraySizeIndex], _buffer1, _buffer2, _resultBuffer);
-        _vectorAddCuda.InitializeActionsAdd(_arraySizes[_currentArraySizeIndex], _buffer1, _buffer2, _resultBuffer);
+        _vectorAddCompute.Init(_computeShader, _arraySizes[_currentArraySizeIndex], _buffer1CS, _buffer2CS, _resultBufferCS);
+        _vectorAddCuda.InitializeActionsAdd(_arraySizes[_currentArraySizeIndex], _buffer1CUDA, _buffer2CUDA, _resultBufferCUDA);
 
         // Execute CUDA vector addition once to get an initial execution time
         // (as we retrieve the variable with one frame late, if we don't do that we will retrieve 0 for the first frame)
@@ -112,10 +116,12 @@ public class VectorAddManager : MonoBehaviour
         // Therefore, we wait a few seconds before clocking the time of the computations.
         if (!_recordingStarted)
         {
-            _buffer1.SetData(_array1);
-            _buffer2.SetData(_array2);
+            _buffer1CS.SetData(_array1);
+            _buffer2CS.SetData(_array2);
+            _buffer1CUDA.SetData(_array1);
+            _buffer2CUDA.SetData(_array2);
 
-            _vectorAddCompute.ComputeSum(_resultBuffer, ref _resultArray);
+            _vectorAddCompute.ComputeSum(_resultBufferCS, ref _resultArrayCS);
             _vectorAddCuda.ComputeSum();
             _profileTextCS.text = "Average Time CS: loading...";
             _profileTextCUDA.text = "Average Time CUDA: loading...";
@@ -138,10 +144,11 @@ public class VectorAddManager : MonoBehaviour
                 InitializeArrays(arraySize);
             }
 
-            // The core of the computation 
+            // The core of the computation
             // Execute sum and retrieve data with compute shader
-            float gpuExecutionTimeCS = _vectorAddCompute.ComputeSum(_resultBuffer, ref _resultArray);
             // Execute sum and retrieve data with CUDA
+
+            float gpuExecutionTimeCS = _vectorAddCompute.ComputeSum(_resultBufferCS, ref _resultArrayCS);
             float gpuExecutionTimeCUDA = _vectorAddCuda.ComputeSum();
 
             // To check results
@@ -154,7 +161,7 @@ public class VectorAddManager : MonoBehaviour
                 }
             }
 
-            // Update the UI 
+            // Update the UI
             UpdateProfilingInfo(gpuExecutionTimeCS, gpuExecutionTimeCUDA);
             _currentSampleCount++;
         }
@@ -184,12 +191,9 @@ public class VectorAddManager : MonoBehaviour
             {
                 InitializeBuffers(_arraySizes[_currentArraySizeIndex]);
                 InitializeArrays(_arraySizes[_currentArraySizeIndex]);
-                _vectorAddCompute.Init(_computeShader, _arraySizes[_currentArraySizeIndex], _buffer1, _buffer2,
-                    _resultBuffer);
-                _vectorAddCuda.InitializeActionsAdd(_arraySizes[_currentArraySizeIndex], _buffer1, _buffer2,
-                    _resultBuffer);
                 // Execute CUDA vector addition once to get an initial execution time
                 // (as we retrieve the variable with one frame late, if we don't do that we will retrieve 0 for the first frame)
+                _vectorAddCuda.InitializeActionsAdd(_arraySizes[_currentArraySizeIndex], _buffer1CUDA, _buffer2CUDA, _resultBufferCUDA);
                 _vectorAddCuda.ComputeSum();
             }
             else
@@ -212,8 +216,8 @@ public class VectorAddManager : MonoBehaviour
     /// </summary>
     private void OnDestroy()
     {
-        // if the last initialization of buffer has not been released, we released 
-        // it can happen in unity editor when user quit the application before the 
+        // if the last initialization of buffer has not been released, we released
+        // it can happen in unity editor when user quit the application before the
         // end of the test
         if (!_hasBeenRelease)
         {
@@ -227,14 +231,13 @@ public class VectorAddManager : MonoBehaviour
     /// <param name="arraySize">The size of the arrays to initialize.</param>
     private void InitializeArrays(int arraySize)
     {
-        // randomize the value of the array
         _array1 = GenerateRandomArray(arraySize);
         _array2 = GenerateRandomArray(arraySize);
-        // send the array to gpu
-        _buffer1.SetData(_array1);
-        _buffer2.SetData(_array2);
-        // initialize the array of result
-        _resultArray = new float[arraySize];
+        _buffer1CS.SetData(_array1);
+        _buffer2CS.SetData(_array2);
+        _buffer1CUDA.SetData(_array1);
+        _buffer2CUDA.SetData(_array2);
+        _resultArrayCS = new float[arraySize];
     }
 
     /// <summary>
@@ -244,10 +247,13 @@ public class VectorAddManager : MonoBehaviour
     private void InitializeBuffers(int arraySize)
     {
         _hasBeenRelease = false;
-        // initialize the buffer to structured default type
-        _buffer1 = new ComputeBuffer(arraySize, sizeof(float));
-        _buffer2 = new ComputeBuffer(arraySize, sizeof(float));
-        _resultBuffer = new ComputeBuffer(arraySize, sizeof(float));
+        _buffer1CS = new ComputeBuffer(arraySize, sizeof(float));
+        _buffer2CS = new ComputeBuffer(arraySize, sizeof(float));
+        _resultBufferCS = new ComputeBuffer(arraySize, sizeof(float));
+
+        _buffer1CUDA = new ComputeBuffer(arraySize, sizeof(float));
+        _buffer2CUDA = new ComputeBuffer(arraySize, sizeof(float));
+        _resultBufferCUDA = new ComputeBuffer(arraySize, sizeof(float));
     }
 
     /// <summary>
@@ -258,9 +264,13 @@ public class VectorAddManager : MonoBehaviour
         _hasBeenRelease = true;
         // release the memory (for cuda and on unity side)
         _vectorAddCuda.DestroyActionsAdd();
-        _buffer1.Release();
-        _buffer2.Release();
-        _resultBuffer.Release();
+        _buffer1CS.Release();
+        _buffer2CS.Release();
+        _resultBufferCS.Release();
+
+        _buffer1CUDA.Release();
+        _buffer2CUDA.Release();
+        _resultBufferCUDA.Release();
     }
 
     /// <summary>
@@ -302,12 +312,12 @@ public class VectorAddManager : MonoBehaviour
     private bool CompareResults(float[] cpuResult)
     {
         bool isEqual = true;
-        for (int i = 0; i < _resultArray.Length; i++)
+        for (int i = 0; i < _resultArrayCS.Length; i++)
         {
-            if (Mathf.Abs(_resultArray[i] - cpuResult[i]) > Mathf.Epsilon)
+            if (Mathf.Abs(_resultArrayCS[i] - cpuResult[i]) > Mathf.Epsilon)
             {
                 isEqual = false;
-                Debug.LogError($"Mismatch at index {i}: GPU = {_resultArray[i]}, CPU = {cpuResult[i]}");
+                Debug.LogError($"Mismatch at index {i}: GPU = {_resultArrayCS[i]}, CPU = {cpuResult[i]}");
             }
         }
 
