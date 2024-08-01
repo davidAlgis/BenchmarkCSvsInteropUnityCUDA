@@ -20,7 +20,7 @@ public class ActionVectorAdd : ActionUnity.ActionUnity
 
     // Import the retrieveLastExecTimeCuda function from the external plugin
     [DllImport(_dllbenchmarkPlugin)]
-    private static extern float retrieveLastExecTimeCuda(IntPtr action);
+    private static extern float retrieveLastExecTimeCudaVecAdd(IntPtr action);
 
     /// <summary>
     ///     Constructor to initialize the ActionVectorAdd object.
@@ -39,5 +39,5 @@ public class ActionVectorAdd : ActionUnity.ActionUnity
     ///     Retrieves the last execution time of the CUDA operation.
     /// </summary>
     /// <returns>The last execution time in milliseconds.</returns>
-    public float RetrieveLastExecTimeCuda() => retrieveLastExecTimeCuda(_actionPtr);
+    public float RetrieveLastExecTimeCuda() => retrieveLastExecTimeCudaVecAdd(_actionPtr);
 }

@@ -104,7 +104,7 @@ extern "C"
     }
 
     UNITY_INTERFACE_EXPORT float UNITY_INTERFACE_API
-    retrieveLastExecTimeCuda(Benchmark::ActionVectorAdd *actionPtr)
+    retrieveLastExecTimeCudaVecAdd(Benchmark::ActionVectorAdd *actionPtr)
     {
         return actionPtr->getExecTime();
     }

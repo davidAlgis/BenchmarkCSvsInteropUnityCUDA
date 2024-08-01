@@ -135,5 +135,5 @@ extern "C"
      * @return The last execution time in milliseconds.
      */
     UNITY_INTERFACE_EXPORT float UNITY_INTERFACE_API
-    retrieveLastExecTimeCuda(Benchmark::ActionVectorAdd *actionPtr);
+    retrieveLastExecTimeCudaVecAdd(Benchmark::ActionVectorAdd *actionPtr);
 }
