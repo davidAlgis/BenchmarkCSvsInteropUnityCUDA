@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.37311953, g: 0.38074014, b: 0.3587274, a: 1}
+  m_IndirectSpecularColor: {r: 0.37311953, g: 0.38074014, b: 0.35872743, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -332,16 +332,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _arraySizes: e8030000c4090000881300004c1d000010270000a861000050c30000f8240100a086010090d0030020a10700b0710b0040420f00a0252600404b4c00e070720080969800
-  _numSamplesPerSize: 1000
-  _computeShader: {fileID: 7200000, guid: c079d3bf2917e2447a40447e4f0a2fde, type: 3}
-  _vectorAddCuda: {fileID: 53567401}
+  _numSamplesPerSize: 10
   _profileTextCS: {fileID: 814532659}
   _profileTextCUDA: {fileID: 1379051417}
   _profileTextDifference: {fileID: 1199873797}
-  _sizeArrayText: {fileID: 1367828938}
-  _compareCPU: 0
-  _randomizedEachFrame: 0
-  _waitTimeBeforeClocking: 30
+  _titleText: {fileID: 1367828938}
+  _waitTimeBeforeClocking: 1
+  _computeShader: {fileID: 7200000, guid: c079d3bf2917e2447a40447e4f0a2fde, type: 3}
+  _vectorAddCuda: {fileID: 53567401}
 --- !u!1 &459145868
 GameObject:
   m_ObjectHideFlags: 0
@@ -518,7 +516,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 72
+  m_fontSize: 52.9
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -754,7 +752,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 72
+  m_fontSize: 52.9
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -888,7 +886,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 72
+  m_fontSize: 52.9
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1022,7 +1020,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 72
+  m_fontSize: 52.9
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
