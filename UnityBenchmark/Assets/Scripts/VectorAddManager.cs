@@ -89,11 +89,6 @@ public class VectorAddManager : BenchmarkManager
             InitializeArrays(arraySize);
         }
 
-        _buffer1CS.SetData(_array1);
-        _buffer2CS.SetData(_array2);
-        _buffer1CUDA.SetData(_array1);
-        _buffer2CUDA.SetData(_array2);
-
         gpuExecutionTimeCS = _vectorAddCompute.ComputeSum(_resultBufferCS, ref _resultArrayCS);
         gpuExecutionTimeCUDA = _vectorAddCuda.ComputeSum();
 
