@@ -332,12 +332,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _arraySizes: e8030000c4090000881300004c1d000010270000a861000050c30000f8240100a086010090d0030020a10700b0710b0040420f00a0252600404b4c00e070720080969800
-  _numSamplesPerSize: 10
+  _numSamplesPerSize: 1000
   _profileTextCS: {fileID: 814532659}
   _profileTextCUDA: {fileID: 1379051417}
   _profileTextDifference: {fileID: 1199873797}
   _titleText: {fileID: 1367828938}
-  _waitTimeBeforeClocking: 1
+  _waitTimeBeforeClocking: 30
   _computeShader: {fileID: 7200000, guid: c079d3bf2917e2447a40447e4f0a2fde, type: 3}
   _vectorAddCuda: {fileID: 53567401}
 --- !u!1 &459145868
