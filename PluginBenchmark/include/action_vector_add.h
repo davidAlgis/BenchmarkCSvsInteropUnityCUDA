@@ -64,14 +64,50 @@ class ActionVectorAdd : Action
     }
 
     private:
-    Buffer *_array1; /**< Pointer to the buffer for the first input array */
-    Buffer *_array2; /**< Pointer to the buffer for the second input array */
-    Buffer *d_arrayResult; /**< Pointer to the buffer for the result array */
+    /**
+     * @brief     Pointer to the buffer for the first input array
+     */
+    Buffer *_buffer1;
 
-    float *h_arrayResult; /**< Pointer to the host-side result array */
-    int _arraySize;       /**< Size of the arrays */
+    /**
+     * @brief     Pointer to the buffer for the second input array
+     */
+    Buffer *_buffer2;
 
-    float _execTime; /**< Stores the execution time of the CUDA operation */
+    /**
+     * @brief     Pointer to the buffer for the result array
+     */
+    Buffer *_bufferResults;
+
+    /**
+     * @brief     Pointer to cuda device array for the first input array
+     */
+    float *d_array1;
+
+    /**
+     * @brief     Pointer to cuda device array for the second input array
+     */
+    float *d_array2;
+
+    /**
+     * @brief     Pointer to cuda device array for the result array
+     */
+    float *d_arrayResults;
+
+    /**
+     * @brief     Pointer to the host-side result array
+     */
+    float *h_arrayResults;
+
+    /**
+     * @brief     Size of the arrays
+     */
+    int _arraySize;
+
+    /**
+     * @brief     Stores the execution time of the CUDA operation
+     */
+    float _execTime;
 };
 
 } // namespace Benchmark

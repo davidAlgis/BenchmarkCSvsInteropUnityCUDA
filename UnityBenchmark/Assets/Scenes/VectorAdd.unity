@@ -332,7 +332,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _arraySizes: e8030000c4090000881300004c1d000010270000a861000050c30000f8240100a086010090d0030020a10700b0710b0040420f00a0252600404b4c00e070720080969800
-  _numSamplesPerSize: 10000
+  _numSamplesPerSize: 1000
   _computeShader: {fileID: 7200000, guid: c079d3bf2917e2447a40447e4f0a2fde, type: 3}
   _vectorAddCuda: {fileID: 53567401}
   _profileTextCS: {fileID: 814532659}
