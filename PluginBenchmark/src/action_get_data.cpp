@@ -25,11 +25,11 @@ int ActionGetData::Start()
 {
     int ret = _buffer->registerBufferInCUDA();
     GRUMBLE(ret, "There has been an error during the registration of "
-                 "the _arrayResult in CUDA. Abort ActionSampleStructBuffer !");
+                 "the _arrayResult in CUDA. Abort ActionGetData !");
 
     ret = _buffer->mapResources<float>(&d_array);
     GRUMBLE(ret, "There has been an error during the map of "
-                 "the _arrayResult in CUDA. Abort ActionSampleStructBuffer !");
+                 "the _arrayResult in CUDA. Abort ActionGetData !");
     return 0;
 }
 
@@ -49,10 +49,10 @@ int ActionGetData::OnDestroy()
 {
     int ret = _buffer->unmapResources();
     GRUMBLE(ret, "There has been an error during the unmap of "
-                 "the _arrayResult in CUDA. Abort ActionSampleStructBuffer !");
+                 "the _arrayResult in CUDA. Abort ActionGetData !");
     ret = _buffer->unregisterBufferInCUDA();
     GRUMBLE(ret, "There has been an error during the unregistration of "
-                 "the _arrayResult in CUDA. Abort ActionSampleStructBuffer !");
+                 "the _arrayResult in CUDA. Abort ActionGetData !");
     delete[] (h_array);
     return 0;
 }

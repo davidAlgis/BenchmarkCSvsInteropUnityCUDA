@@ -27,15 +27,15 @@ int ActionReduce::Start()
     CUDA_CHECK(cudaMalloc(&d_result, sizeof(float)));
     int ret = _buffer->registerBufferInCUDA();
     GRUMBLE(ret, "There has been an error during the registration of "
-                 "the _arrayResult in CUDA. Abort ActionSampleStructBuffer !");
+                 "the _arrayResult in CUDA. Abort ActionReduce !");
 
     ret = _buffer->mapResources<float>(&d_array);
     GRUMBLE(ret, "There has been an error during the map of "
-                 "the _arrayResult in CUDA. Abort ActionSampleStructBuffer !");
+                 "the _arrayResult in CUDA. Abort ActionReduce !");
     ret = preAllocationReduce(d_array, d_result, d_tempStorage,
                               _tempStorageBytes, _arraySize);
     GRUMBLE(ret, "There has been an error during the pre-allocation of reduce. "
-                 "Abort ActionSampleStructBuffer !");
+                 "Abort ActionReduce !");
     return 0;
 }
 
@@ -46,7 +46,7 @@ int ActionReduce::Update()
     int ret =
         reduce(d_array, d_result, d_tempStorage, _tempStorageBytes, _arraySize);
     GRUMBLE(ret, "There has been an error during the reduce. "
-                 "Abort ActionSampleStructBuffer !");
+                 "Abort ActionReduce !");
 
     CUDA_CHECK_RETURN(
         cudaMemcpy(h_result, d_result, sizeof(float), cudaMemcpyDeviceToHost));
@@ -62,10 +62,10 @@ int ActionReduce::OnDestroy()
 {
     int ret = _buffer->unmapResources();
     GRUMBLE(ret, "There has been an error during the unmap of "
-                 "the _arrayResult in CUDA. Abort ActionSampleStructBuffer !");
+                 "the _arrayResult in CUDA. Abort ActionReduce !");
     ret = _buffer->unregisterBufferInCUDA();
     GRUMBLE(ret, "There has been an error during the unregistration of "
-                 "the _arrayResult in CUDA. Abort ActionSampleStructBuffer !");
+                 "the _arrayResult in CUDA. Abort ActionReduce !");
     delete (h_result);
     // Free temporary storage
     if (d_tempStorage != nullptr)

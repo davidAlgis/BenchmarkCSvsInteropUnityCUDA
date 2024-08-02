@@ -30,25 +30,25 @@ int ActionVectorAdd::Start()
 {
     int ret = _buffer1->registerBufferInCUDA();
     GRUMBLE(ret, "There has been an error during the registration of "
-                 "the _array1 in CUDA. Abort ActionSampleStructBuffer !");
+                 "the _array1 in CUDA. Abort ActionVectorAdd !");
     ret = _buffer2->registerBufferInCUDA();
     GRUMBLE(ret, "There has been an error during the registration of "
-                 "the _array2 in CUDA. Abort ActionSampleStructBuffer !");
+                 "the _array2 in CUDA. Abort ActionVectorAdd !");
     ret = _bufferResults->registerBufferInCUDA();
     GRUMBLE(ret, "There has been an error during the registration of "
-                 "the _arrayResult in CUDA. Abort ActionSampleStructBuffer !");
+                 "the _arrayResult in CUDA. Abort ActionVectorAdd !");
 
     ret = _buffer1->mapResources<float>(&d_array1);
     GRUMBLE(ret, "There has been an error during the map of "
-                 "the _array1 in CUDA. Abort ActionSampleStructBuffer !");
+                 "the _array1 in CUDA. Abort ActionVectorAdd !");
 
     ret = _buffer2->mapResources<float>(&d_array2);
     GRUMBLE(ret, "There has been an error during the map of "
-                 "the _array2 in CUDA. Abort ActionSampleStructBuffer !");
+                 "the _array2 in CUDA. Abort ActionVectorAdd !");
 
     ret = _bufferResults->mapResources<float>(&d_arrayResults);
     GRUMBLE(ret, "There has been an error during the map of "
-                 "the _arrayResult in CUDA. Abort ActionSampleStructBuffer !");
+                 "the _arrayResult in CUDA. Abort ActionVectorAdd !");
     return 0;
 }
 
@@ -72,23 +72,23 @@ int ActionVectorAdd::OnDestroy()
 {
     int ret = _buffer1->unmapResources();
     GRUMBLE(ret, "There has been an error during the unmap of "
-                 "the _array1 in CUDA. Abort ActionSampleStructBuffer !");
+                 "the _array1 in CUDA. Abort ActionVectorAdd !");
     ret = _buffer2->unmapResources();
     GRUMBLE(ret, "There has been an error during the unmap of "
-                 "the _array2 in CUDA. Abort ActionSampleStructBuffer !");
+                 "the _array2 in CUDA. Abort ActionVectorAdd !");
     ret = _bufferResults->unmapResources();
     GRUMBLE(ret, "There has been an error during the unmap of "
-                 "the _arrayResult in CUDA. Abort ActionSampleStructBuffer !");
+                 "the _arrayResult in CUDA. Abort ActionVectorAdd !");
 
     ret = _buffer1->unregisterBufferInCUDA();
     GRUMBLE(ret, "There has been an error during the unregistration of "
-                 "the _array1 in CUDA. Abort ActionSampleStructBuffer !");
+                 "the _array1 in CUDA. Abort ActionVectorAdd !");
     ret = _buffer2->unregisterBufferInCUDA();
     GRUMBLE(ret, "There has been an error during the unregistration of "
-                 "the _array2 in CUDA. Abort ActionSampleStructBuffer !");
+                 "the _array2 in CUDA. Abort ActionVectorAdd !");
     ret = _bufferResults->unregisterBufferInCUDA();
     GRUMBLE(ret, "There has been an error during the unregistration of "
-                 "the _arrayResult in CUDA. Abort ActionSampleStructBuffer !");
+                 "the _arrayResult in CUDA. Abort ActionVectorAdd !");
     delete[] (h_arrayResults);
     return 0;
 }
