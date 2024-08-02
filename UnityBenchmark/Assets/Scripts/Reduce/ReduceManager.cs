@@ -79,7 +79,7 @@ public class ReduceManager : BenchmarkManager
     protected override void UpdateMainRecord(out float gpuExecutionTimeCS, out float gpuExecutionTimeCUDA)
     {
         int arraySize = _arraySizes[_currentArraySizeIndex];
-        _titleText.text = $"Get Data - {arraySize} - Sample {_currentSampleCount}/{_numSamplesPerSize}";
+        _titleText.text = $"Reduce - {arraySize} - Sample {_currentSampleCount}/{_numSamplesPerSize}";
 
         if (_randomizedEachFrame)
         {
