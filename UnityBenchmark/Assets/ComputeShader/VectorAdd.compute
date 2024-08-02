@@ -5,7 +5,7 @@ StructuredBuffer<float> Array2;
 RWStructuredBuffer<float> Result;
 int ArraySize;
 
-#define NUM_THREADS 256
+#define NUM_THREADS 1024
 
 [numthreads(NUM_THREADS,1,1)]
 void VectorAdd(uint3 id : SV_DispatchThreadID)
