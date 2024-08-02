@@ -24,7 +24,7 @@ ActionReduce::ActionReduce(void *arrayToGet, int arraySize)
 int ActionReduce::Start()
 {
     h_result = new float(0.0f);
-    CUDA_CHECK(cudaMalloc(&d_result, sizeof(float)));
+    CUDA_CHECK_RETURN(cudaMalloc(&d_result, sizeof(float)));
     int ret = _buffer->registerBufferInCUDA();
     GRUMBLE(ret, "There has been an error during the registration of "
                  "the _arrayResult in CUDA. Abort ActionReduce !");
@@ -32,7 +32,7 @@ int ActionReduce::Start()
     ret = _buffer->mapResources<float>(&d_array);
     GRUMBLE(ret, "There has been an error during the map of "
                  "the _arrayResult in CUDA. Abort ActionReduce !");
-    ret = preAllocationReduce(d_array, d_result, d_tempStorage,
+    ret = preAllocationReduce(d_array, d_result, &d_tempStorage,
                               _tempStorageBytes, _arraySize);
     GRUMBLE(ret, "There has been an error during the pre-allocation of reduce. "
                  "Abort ActionReduce !");
@@ -54,7 +54,6 @@ int ActionReduce::Update()
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float, std::milli> elapsed = end - start;
     _execTime = elapsed.count();
-    Log::log().debugLog(("result = " + std::to_string(*h_result)).c_str());
     return 0;
 }
 

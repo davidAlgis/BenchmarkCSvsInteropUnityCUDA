@@ -73,7 +73,7 @@ class ActionReduce : Action
      * @brief     Pointer to cuda device array of temporary storage that will be
      * use by cub to performs the sum.
      */
-    float *d_tempStorage;
+    void *d_tempStorage;
 
     /**
      * @brief     Size of d_temp_storage array
