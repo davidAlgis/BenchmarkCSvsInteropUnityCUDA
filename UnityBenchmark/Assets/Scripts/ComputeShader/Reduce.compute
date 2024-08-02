@@ -1,0 +1,44 @@
+#pragma kernel Reduce
+
+#define THREADS_PER_GROUP 256
+
+// Input data : data to sum
+StructuredBuffer<float> arrayToSum;
+// Output data : sum result
+RWStructuredBuffer<float> resultReduce;
+
+int sizeArrayToSum;
+// Used for local sums
+groupshared float partialSums[THREADS_PER_GROUP];
+
+[numthreads(THREADS_PER_GROUP,1,1)]
+void Reduce(uint tid : SV_GroupIndex, uint3 groupIdx : SV_GroupID)
+{
+    const uint i = groupIdx.x * THREADS_PER_GROUP + tid;
+    if (i >= sizeArrayToSum)
+    {
+        return;
+    }
+
+    partialSums[tid] = arrayToSum[i];
+
+    GroupMemoryBarrierWithGroupSync();
+
+    //[unroll(THREADS_PER_GROUP)]
+    for (uint s = THREADS_PER_GROUP / 2; s > 0; s >>= 1)
+    {
+        if (tid < s)
+        {
+            partialSums[tid] += partialSums[tid + s];
+        }
+        GroupMemoryBarrierWithGroupSync();
+    }
+
+
+    // Have the first thread write out to the output
+    if (tid == 0)
+    {
+        // write out the result for each thread group
+        resultReduce[groupIdx.x] = partialSums[0];
+    }
+}
