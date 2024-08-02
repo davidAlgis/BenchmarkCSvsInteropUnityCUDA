@@ -109,6 +109,7 @@ public class ReduceManager : BenchmarkManager
     /// </summary>
     protected override void ReInitialize()
     {
+        ReleaseBuffers();
         InitializeBuffers(_arraySizes[_currentArraySizeIndex]);
         InitializeArrays(_arraySizes[_currentArraySizeIndex]);
         _reduceCuda.InitializeActionsReduce(_arraySizes[_currentArraySizeIndex], _bufferCUDA);
