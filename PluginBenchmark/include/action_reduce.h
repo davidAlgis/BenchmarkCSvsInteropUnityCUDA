@@ -73,12 +73,12 @@ class ActionReduce : Action
      * @brief     Pointer to cuda device array of temporary storage that will be
      * use by cub to performs the sum.
      */
-    float *d_temp_storage;
+    float *d_tempStorage;
 
     /**
      * @brief     Size of d_temp_storage array
      */
-    size_t _temp_storage_bytes;
+    size_t _tempStorageBytes;
 
     /**
      * @brief     Pointer to the device result of the reduce.
@@ -122,5 +122,5 @@ extern "C"
      * @return The last execution time in milliseconds.
      */
     UNITY_INTERFACE_EXPORT float UNITY_INTERFACE_API
-    retrieveLastExecTimeCudaGetData(Benchmark::ActionReduce *actionPtr);
+    retrieveLastExecTimeCudaReduce(Benchmark::ActionReduce *actionPtr);
 }

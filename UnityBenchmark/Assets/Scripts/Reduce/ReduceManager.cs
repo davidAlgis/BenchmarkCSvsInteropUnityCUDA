@@ -1,11 +1,12 @@
-using System.Diagnostics;
 using UnityEngine;
 
 /// <summary>
-///     This class manages the reduce of a buffer process and profiling.
+///     This class manages the reduction of a buffer process and profiling.
 /// </summary>
 public class ReduceManager : BenchmarkManager
 {
+    [SerializeField] private ComputeShader _computeShader;
+
     // References to CUDA class
     [SerializeField] private ReduceCUDA _reduceCuda;
 
@@ -15,9 +16,15 @@ public class ReduceManager : BenchmarkManager
     // Compute buffers for GPU computation
     private ComputeBuffer _bufferCS;
     private ComputeBuffer _bufferCUDA;
-    private bool _hasBeenRelease;
 
+    private bool _hasBeenRelease;
     private bool _randomizedEachFrame;
+
+    // Compute shader for reduction
+    private ReduceCS _reduceCS;
+    private float[] _resultArray;
+    private ComputeBuffer _resultBufferCS;
+    private ComputeBuffer _spinlockBuffer;
 
     /// <summary>
     ///     Initializes the components and starts the profiling process.
@@ -44,6 +51,11 @@ public class ReduceManager : BenchmarkManager
         InitializeBuffers(_arraySizes[_currentArraySizeIndex]);
         InitializeArrays(_arraySizes[_currentArraySizeIndex]);
         _reduceCuda.InitializeActionsReduce(_arraySizes[_currentArraySizeIndex], _bufferCUDA);
+
+        // Initialize the reduce compute shader
+        _reduceCS = new ReduceCS();
+        _reduceCS.Init(_computeShader, _arraySizes[_currentArraySizeIndex], _bufferCS, _resultBufferCS,
+            _spinlockBuffer);
 
         // Execute CUDA get data once to get an initial execution time
         _reduceCuda.UpdateReduce();
@@ -74,22 +86,11 @@ public class ReduceManager : BenchmarkManager
             InitializeArrays(arraySize);
         }
 
-        // Retrieve the data from the result buffer
-        gpuExecutionTimeCS = UpdateGetDataCS();
+        // Perform reduction using compute shader
+        gpuExecutionTimeCS = _reduceCS.ComputeSum(_resultBufferCS, ref _resultArray);
+
+        // Perform reduction using CUDA
         gpuExecutionTimeCUDA = _reduceCuda.UpdateReduce();
-    }
-
-    private float UpdateGetDataCS()
-    {
-        // Start the stopwatch
-        Stopwatch stopwatch = Stopwatch.StartNew();
-
-        // Retrieve the data from the result buffer
-        _bufferCS.GetData(_array);
-
-        // Stop the stopwatch and return the elapsed time
-        stopwatch.Stop();
-        return (float)stopwatch.Elapsed.TotalMilliseconds;
     }
 
     /// <summary>
@@ -100,6 +101,10 @@ public class ReduceManager : BenchmarkManager
         InitializeBuffers(_arraySizes[_currentArraySizeIndex]);
         InitializeArrays(_arraySizes[_currentArraySizeIndex]);
         _reduceCuda.InitializeActionsReduce(_arraySizes[_currentArraySizeIndex], _bufferCUDA);
+
+        // Re-initialize the reduce compute shader
+        _reduceCS.Init(_computeShader, _arraySizes[_currentArraySizeIndex], _bufferCS, _resultBufferCS,
+            _spinlockBuffer);
         _reduceCuda.UpdateReduce();
     }
 
@@ -109,7 +114,8 @@ public class ReduceManager : BenchmarkManager
     /// <param name="arraySize">The size of the arrays to initialize.</param>
     private void InitializeArrays(int arraySize)
     {
-        _array = GenerateRandomArray(arraySize);
+        _array = GenerateRandomArray(arraySize, -10.0f, 10.0f);
+        _resultArray = new float[1];
         _bufferCUDA.SetData(_array);
         _bufferCS.SetData(_array);
     }
@@ -123,6 +129,9 @@ public class ReduceManager : BenchmarkManager
         _hasBeenRelease = false;
         _bufferCUDA = new ComputeBuffer(arraySize, sizeof(float));
         _bufferCS = new ComputeBuffer(arraySize, sizeof(float));
+        _resultBufferCS = new ComputeBuffer(1, sizeof(float));
+        _spinlockBuffer = new ComputeBuffer(1, sizeof(int));
+        _spinlockBuffer.SetData(new[] { 0 }); // Initialize spinlock to 0
     }
 
     /// <summary>
@@ -134,5 +143,7 @@ public class ReduceManager : BenchmarkManager
         _reduceCuda.DestroyActionsReduce();
         _bufferCUDA.Release();
         _bufferCS.Release();
+        _resultBufferCS.Release();
+        _spinlockBuffer.Release();
     }
 }

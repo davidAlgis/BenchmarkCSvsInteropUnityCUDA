@@ -7,10 +7,11 @@ using UnityEngine;
 public class ReduceCS
 {
     // Names for compute shader parameters
-    private readonly string _arraySizeName = "ArraySize";
+    private readonly string _arraySizeName = "sizeArrayToSum";
     private readonly string _arrayToSumName = "arrayToSum";
     private readonly string _kernelName = "Reduce";
     private readonly string _resultReduceName = "resultReduce";
+    private readonly string _spinlockName = "spinlock";
 
     // Compute shader and kernel handle
     private ComputeShader _computeShader;
@@ -24,11 +25,12 @@ public class ReduceCS
     ///     Initializes the compute shader, buffers, and kernel handle.
     /// </summary>
     /// <param name="computeShader">The compute shader to use.</param>
-    /// <param name="arraySize">The size of the arrays.</param>
-    /// <param name="buffer1">Compute buffer for the first array.</param>
-    /// <param name="buffer2">Compute buffer for the second array.</param>
-    /// <param name="resultBuffer">Compute buffer for the result array.</param>
-    public void Init(ComputeShader computeShader, int arraySize, ComputeBuffer arrayToSum, ComputeBuffer resultReduce)
+    /// <param name="arraySize">The size of the array.</param>
+    /// <param name="arrayToSum">Compute buffer for the array to sum.</param>
+    /// <param name="resultReduce">Compute buffer for the result reduce.</param>
+    /// <param name="spinlock">Compute buffer for the spinlock.</param>
+    public void Init(ComputeShader computeShader, int arraySize, ComputeBuffer arrayToSum, ComputeBuffer resultReduce,
+        ComputeBuffer spinlock)
     {
         _computeShader = computeShader;
         _kernelHandle = _computeShader.FindKernel(_kernelName);
@@ -38,7 +40,8 @@ public class ReduceCS
         // Set compute shader buffers and array size
         _computeShader.SetBuffer(_kernelHandle, _arrayToSumName, arrayToSum);
         _computeShader.SetBuffer(_kernelHandle, _resultReduceName, resultReduce);
-        // _computeShader.SetInt(_arraySizeName, arraySize);
+        _computeShader.SetBuffer(_kernelHandle, _spinlockName, spinlock);
+        _computeShader.SetInt(_arraySizeName, arraySize);
     }
 
     /// <summary>
@@ -53,10 +56,10 @@ public class ReduceCS
         _stopwatch = Stopwatch.StartNew();
 
         // Calculate the number of thread groups needed
-        int threadGroupsX = Mathf.CeilToInt((float)resultArray.Length / _numThreadsX);
+        int threadGroupX = Mathf.CeilToInt((float)resultArray.Length / _numThreadsX);
 
         // Dispatch the compute shader
-        _computeShader.Dispatch(_kernelHandle, threadGroupsX, 1, 1);
+        _computeShader.Dispatch(_kernelHandle, threadGroupX, 1, 1);
 
         // Retrieve one float from the result buffer, to synchronize the computation
         // (it makes easier profiling, as Unity doesn't have dedicated profiling tools for compute shader)
