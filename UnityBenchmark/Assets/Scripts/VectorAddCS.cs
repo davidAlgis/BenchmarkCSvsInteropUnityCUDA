@@ -61,7 +61,8 @@ public class VectorAddCS
         // Dispatch the compute shader
         _computeShader.Dispatch(_kernelHandle, threadGroupsX, 1, 1);
 
-        // Retrieve the data from the result buffer
+        // Retrieve one float from the result buffer, to synchronize the computation
+        // (it makes easier profiling, as Unity doesn't have dedicated profiling tools for compute shader)
         resultBuffer.GetData(resultArray, 0, 0, 1);
 
         // Stop the stopwatch and return the elapsed time
