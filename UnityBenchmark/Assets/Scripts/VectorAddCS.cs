@@ -62,7 +62,7 @@ public class VectorAddCS
         _computeShader.Dispatch(_kernelHandle, threadGroupsX, 1, 1);
 
         // Retrieve the data from the result buffer
-        resultBuffer.GetData(resultArray);
+        resultBuffer.GetData(resultArray, 0, 0, 1);
 
         // Stop the stopwatch and return the elapsed time
         _stopwatch.Stop();

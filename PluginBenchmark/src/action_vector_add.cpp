@@ -57,8 +57,8 @@ int ActionVectorAdd::Update()
 
     kernelCallerWriteBuffer(d_array1, d_array2, d_arrayResults, _arraySize);
 
-    CUDA_CHECK_RETURN(cudaMemcpy(h_arrayResults, d_arrayResults,
-                                 sizeof(float) * _arraySize,
+    // we only copy a float as in the compute shader part
+    CUDA_CHECK_RETURN(cudaMemcpy(h_arrayResults, d_arrayResults, sizeof(float),
                                  cudaMemcpyDeviceToHost));
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float, std::milli> elapsed = end - start;
