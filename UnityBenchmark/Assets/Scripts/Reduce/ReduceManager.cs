@@ -86,6 +86,8 @@ public class ReduceManager : BenchmarkManager
             InitializeArrays(arraySize);
         }
 
+        _spinlockBuffer.SetData(new[] { 0 });
+        _resultBufferCS.SetData(new[] { 0 });
         // Perform reduction using compute shader
         gpuExecutionTimeCS = _reduceCS.ComputeSum(_resultBufferCS, ref _resultArray);
 
