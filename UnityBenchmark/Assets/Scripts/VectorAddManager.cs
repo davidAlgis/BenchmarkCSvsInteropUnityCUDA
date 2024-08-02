@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 
 /// <summary>
@@ -12,28 +10,29 @@ public class VectorAddManager : BenchmarkManager
     [SerializeField] private VectorAddCUDA _vectorAddCuda;
 
     [SerializeField] private int _nbrElementToRetrieve = 1;
+
     // Arrays for computation
     private float[] _array1;
     private float[] _array2;
 
     // Compute buffers for GPU computation
     private ComputeBuffer _buffer1CS;
-    private ComputeBuffer _buffer2CS;
-    private ComputeBuffer _resultBufferCS;
 
     private ComputeBuffer _buffer1CUDA;
+    private ComputeBuffer _buffer2CS;
     private ComputeBuffer _buffer2CUDA;
-    private ComputeBuffer _resultBufferCUDA;
+    private bool _compareCPU;
+    private bool _hasBeenRelease;
+
+    private bool _randomizedEachFrame;
 
     // Arrays for storing results
     private float[] _resultArrayCS;
+    private ComputeBuffer _resultBufferCS;
+    private ComputeBuffer _resultBufferCUDA;
 
     // Compute shader class for vector addition
     private VectorAddCS _vectorAddCompute;
-
-    private bool _randomizedEachFrame;
-    private bool _compareCPU;
-    private bool _hasBeenRelease;
 
     /// <summary>
     ///     Initializes the components and starts the profiling process.
@@ -42,6 +41,14 @@ public class VectorAddManager : BenchmarkManager
     {
         _vectorAddCuda.InitializeInteropHandler();
         base.Start();
+    }
+
+    private void OnDestroy()
+    {
+        if (!_hasBeenRelease)
+        {
+            ReleaseBuffers();
+        }
     }
 
     /// <summary>
@@ -197,13 +204,5 @@ public class VectorAddManager : BenchmarkManager
         }
 
         return isEqual;
-    }
-
-    private void OnDestroy()
-    {
-        if (!_hasBeenRelease)
-        {
-            ReleaseBuffers();
-        }
     }
 }
