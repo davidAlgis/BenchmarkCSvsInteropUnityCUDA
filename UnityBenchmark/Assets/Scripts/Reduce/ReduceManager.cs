@@ -10,6 +10,9 @@ public class ReduceManager : BenchmarkManager
     // References to CUDA class
     [SerializeField] private ReduceCUDA _reduceCuda;
 
+    // Boolean to check the result each frame
+    [SerializeField] private bool _checkResultEachFrame;
+
     // Arrays for computation
     private float[] _array;
 
@@ -93,6 +96,12 @@ public class ReduceManager : BenchmarkManager
 
         // Perform reduction using CUDA
         gpuExecutionTimeCUDA = _reduceCuda.UpdateReduce();
+
+        // Check result each frame if enabled
+        if (_checkResultEachFrame)
+        {
+            CheckResult();
+        }
     }
 
     /// <summary>
@@ -133,7 +142,6 @@ public class ReduceManager : BenchmarkManager
         _bufferCS = new ComputeBuffer(arraySize, sizeof(float));
         _resultBufferCS = new ComputeBuffer(1, sizeof(float));
         _spinlockBuffer = new ComputeBuffer(1, sizeof(int));
-        _spinlockBuffer.SetData(new[] { 0 }); // Initialize spinlock to 0
     }
 
     /// <summary>
@@ -147,5 +155,31 @@ public class ReduceManager : BenchmarkManager
         _bufferCS.Release();
         _resultBufferCS.Release();
         _spinlockBuffer.Release();
+    }
+
+    /// <summary>
+    ///     Checks if the result of the reduction is correct by comparing it to a CPU sum.
+    /// </summary>
+    private void CheckResult()
+    {
+        // Perform CPU sum
+        float cpuSum = 0.0f;
+        foreach (float x in _array)
+        {
+            cpuSum += x;
+        }
+
+        // Get the GPU result
+        float gpuSum = _resultArray[0];
+
+        // Compare results
+        if (Mathf.Approximately(cpuSum, gpuSum))
+        {
+            Debug.Log("GPU result matches CPU result.");
+        }
+        else
+        {
+            Debug.LogError($"GPU result ({gpuSum}) does not match CPU result ({cpuSum}).");
+        }
     }
 }

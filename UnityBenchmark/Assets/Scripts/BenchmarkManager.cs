@@ -164,12 +164,13 @@ public class BenchmarkManager : MonoBehaviour
     /// </summary>
     /// <param name="length">The length of the array to generate.</param>
     /// <returns>A randomly generated float array.</returns>
-    protected float[] GenerateRandomArray(int length)
+    protected float[] GenerateRandomArray(int length, float min = 0.0f, float max = 100.0f)
     {
         float[] array = new float[length];
         for (int i = 0; i < length; i++)
         {
-            array[i] = Random.Range(0f, 100f);
+            // array[i] = Random.Range(min, max);
+            array[i] = 0.01f;
         }
 
         return array;
