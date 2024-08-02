@@ -16,7 +16,8 @@ public class ActionVectorAdd : ActionUnity.ActionUnity
 
     // Import the createActionVectorAdd function from the external plugin
     [DllImport(_dllbenchmarkPlugin)]
-    private static extern IntPtr createActionVectorAdd(IntPtr array1, IntPtr array2, IntPtr arrayResult, int arraySize);
+    private static extern IntPtr createActionVectorAdd(IntPtr array1, IntPtr array2, IntPtr arrayResult, int arraySize,
+        int nbrElementToRetrieve);
 
     // Import the retrieveLastExecTimeCuda function from the external plugin
     [DllImport(_dllbenchmarkPlugin)]
@@ -29,11 +30,16 @@ public class ActionVectorAdd : ActionUnity.ActionUnity
     /// <param name="array2">ComputeBuffer for the second input array.</param>
     /// <param name="arrayResult">ComputeBuffer for the result array.</param>
     /// <param name="arraySize">Size of the arrays.</param>
-    public ActionVectorAdd(ComputeBuffer array1, ComputeBuffer array2, ComputeBuffer arrayResult, int arraySize) =>
+    /// <param name="nbrElementToRetrieve">
+    ///     Defined the number of element that needs to be retrieve by CPU from the result
+    ///     compute buffer.
+    /// </param>
+    public ActionVectorAdd(ComputeBuffer array1, ComputeBuffer array2, ComputeBuffer arrayResult, int arraySize,
+        int nbrElementToRetrieve) =>
         // Call the createActionVectorAdd function from the plugin to create the action
         // and set the pointer to the created action object in _actionPtr
         _actionPtr = createActionVectorAdd(array1.GetNativeBufferPtr(), array2.GetNativeBufferPtr(),
-            arrayResult.GetNativeBufferPtr(), arraySize);
+            arrayResult.GetNativeBufferPtr(), arraySize, nbrElementToRetrieve);
 
     /// <summary>
     ///     Retrieves the last execution time of the CUDA operation.

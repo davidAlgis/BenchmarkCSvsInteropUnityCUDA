@@ -15,13 +15,14 @@ namespace Benchmark
 {
 
 ActionVectorAdd::ActionVectorAdd(void *array1, void *array2, void *arrayResult,
-                                 int arraySize)
+                                 int arraySize, int nbrElementToRetrieve)
 {
     _buffer1 = CreateBufferInterop(array1, arraySize);
     _buffer2 = CreateBufferInterop(array2, arraySize);
     _bufferResults = CreateBufferInterop(arrayResult, arraySize);
     h_arrayResults = new float[arraySize];
     _arraySize = arraySize;
+    _nbrElementToRetrieve = nbrElementToRetrieve;
     _execTime = 0.0f;
 }
 
@@ -58,7 +59,8 @@ int ActionVectorAdd::Update()
     kernelCallerWriteBuffer(d_array1, d_array2, d_arrayResults, _arraySize);
 
     // we only copy a float as in the compute shader part
-    CUDA_CHECK_RETURN(cudaMemcpy(h_arrayResults, d_arrayResults, sizeof(float),
+    CUDA_CHECK_RETURN(cudaMemcpy(h_arrayResults, d_arrayResults,
+                                 _nbrElementToRetrieve * sizeof(float),
                                  cudaMemcpyDeviceToHost));
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<float, std::milli> elapsed = end - start;
@@ -97,10 +99,10 @@ extern "C"
 {
     UNITY_INTERFACE_EXPORT Benchmark::ActionVectorAdd *UNITY_INTERFACE_API
     createActionVectorAdd(void *array1, void *array2, void *arrayResult,
-                          int arraySize)
+                          int arraySize, int nbrElementToRetrieve)
     {
-        return (new Benchmark::ActionVectorAdd(array1, array2, arrayResult,
-                                               arraySize));
+        return (new Benchmark::ActionVectorAdd(
+            array1, array2, arrayResult, arraySize, nbrElementToRetrieve));
     }
 
     UNITY_INTERFACE_EXPORT float UNITY_INTERFACE_API

@@ -50,7 +50,7 @@ public class VectorAddCS
     /// <param name="resultBuffer">The compute buffer to store the result.</param>
     /// <param name="resultArray">The array to store the result after computation.</param>
     /// <returns>The execution time in milliseconds.</returns>
-    public float ComputeSum(ComputeBuffer resultBuffer, ref float[] resultArray)
+    public float ComputeSum(ComputeBuffer resultBuffer, ref float[] resultArray, int nbrElementToRetrieve)
     {
         // Start the stopwatch
         _stopwatch = Stopwatch.StartNew();
@@ -63,7 +63,7 @@ public class VectorAddCS
 
         // Retrieve one float from the result buffer, to synchronize the computation
         // (it makes easier profiling, as Unity doesn't have dedicated profiling tools for compute shader)
-        resultBuffer.GetData(resultArray, 0, 0, 1);
+        resultBuffer.GetData(resultArray, 0, 0, nbrElementToRetrieve);
 
         // Stop the stopwatch and return the elapsed time
         _stopwatch.Stop();

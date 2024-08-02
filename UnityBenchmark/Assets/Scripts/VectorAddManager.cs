@@ -11,6 +11,7 @@ public class VectorAddManager : BenchmarkManager
     [SerializeField] private ComputeShader _computeShader;
     [SerializeField] private VectorAddCUDA _vectorAddCuda;
 
+    [SerializeField] private int _nbrElementToRetrieve = 1;
     // Arrays for computation
     private float[] _array1;
     private float[] _array2;
@@ -54,7 +55,7 @@ public class VectorAddManager : BenchmarkManager
         _vectorAddCompute.Init(_computeShader, _arraySizes[_currentArraySizeIndex], _buffer1CS, _buffer2CS,
             _resultBufferCS);
         _vectorAddCuda.InitializeActionsAdd(_arraySizes[_currentArraySizeIndex], _buffer1CUDA, _buffer2CUDA,
-            _resultBufferCUDA);
+            _resultBufferCUDA, _nbrElementToRetrieve);
 
         // Execute CUDA vector addition once to get an initial execution time
         _vectorAddCuda.ComputeSum();
@@ -70,7 +71,7 @@ public class VectorAddManager : BenchmarkManager
         _buffer1CUDA.SetData(_array1);
         _buffer2CUDA.SetData(_array2);
 
-        _vectorAddCompute.ComputeSum(_resultBufferCS, ref _resultArrayCS);
+        _vectorAddCompute.ComputeSum(_resultBufferCS, ref _resultArrayCS, _nbrElementToRetrieve);
         _vectorAddCuda.ComputeSum();
 
         base.UpdateBeforeRecord();
@@ -89,7 +90,7 @@ public class VectorAddManager : BenchmarkManager
             InitializeArrays(arraySize);
         }
 
-        gpuExecutionTimeCS = _vectorAddCompute.ComputeSum(_resultBufferCS, ref _resultArrayCS);
+        gpuExecutionTimeCS = _vectorAddCompute.ComputeSum(_resultBufferCS, ref _resultArrayCS, _nbrElementToRetrieve);
         gpuExecutionTimeCUDA = _vectorAddCuda.ComputeSum();
 
         if (_compareCPU)
@@ -112,7 +113,7 @@ public class VectorAddManager : BenchmarkManager
         _vectorAddCompute.Init(_computeShader, _arraySizes[_currentArraySizeIndex], _buffer1CS, _buffer2CS,
             _resultBufferCS);
         _vectorAddCuda.InitializeActionsAdd(_arraySizes[_currentArraySizeIndex], _buffer1CUDA, _buffer2CUDA,
-            _resultBufferCUDA);
+            _resultBufferCUDA, _nbrElementToRetrieve);
         _vectorAddCuda.ComputeSum();
     }
 
@@ -128,7 +129,7 @@ public class VectorAddManager : BenchmarkManager
         _buffer2CS.SetData(_array2);
         _buffer1CUDA.SetData(_array1);
         _buffer2CUDA.SetData(_array2);
-        _resultArrayCS = new float[arraySize];
+        _resultArrayCS = new float[_nbrElementToRetrieve];
     }
 
     /// <summary>

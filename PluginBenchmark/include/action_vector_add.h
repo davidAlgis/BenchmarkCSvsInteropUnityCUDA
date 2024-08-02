@@ -23,17 +23,20 @@ class ActionVectorAdd : Action
 {
     public:
     /**
-     * @brief Constructs an ActionVectorAdd object.
-     * @param array1 Pointer to the graphics native memory pointer of the first
-     * computer buffer.
-     * @param array2 Pointer to the graphics native memory pointer of the second
-     * computer buffer.
-     * @param arrayResult Pointer to the graphics native memory pointer of the
-     * result computer buffer.
-     * @param arraySize Size of the arrays.
+     * @brief      Constructs an ActionVectorAdd object.
+     *
+     * @param      array1                Pointer to the graphics native memory
+     *                                   pointer of the first computer buffer.
+     * @param      array2                Pointer to the graphics native memory
+     *                                   pointer of the second computer buffer.
+     * @param      arrayResult           Pointer to the graphics native memory
+     *                                   pointer of the result computer buffer.
+     * @param      arraySize             Size of the arrays.
+     * @param[in]  nbrElementToRetrieve  Defined the number of element that
+     * needs to be retrieve by CPU from the result compute buffer.
      */
     explicit ActionVectorAdd(void *array1, void *array2, void *arrayResult,
-                             int arraySize);
+                             int arraySize, int nbrElementToRetrieve);
 
     /**
      * @brief Starts the action by registering the buffers in CUDA.
@@ -104,6 +107,8 @@ class ActionVectorAdd : Action
      */
     int _arraySize;
 
+    int _nbrElementToRetrieve;
+
     /**
      * @brief     Stores the execution time of the CUDA operation
      */
@@ -115,19 +120,22 @@ class ActionVectorAdd : Action
 extern "C"
 {
     /**
-     * @brief Creates an ActionVectorAdd object.
-     * @param array1 Pointer to the graphics native memory pointer of the first
-     * computer buffer.
-     * @param array2 Pointer to the graphics native memory pointer of the second
-     * computer buffer.
-     * @param arrayResult Pointer to the graphics native memory pointer of the
-     * result computer buffer.
-     * @param arraySize Size of the arrays.
-     * @return Pointer to the created ActionVectorAdd object.
+     * @brief      Creates an ActionVectorAdd object.
+     * @param      array1       Pointer to the graphics native memory pointer of
+     *                          the first computer buffer.
+     * @param      array2       Pointer to the graphics native memory pointer of
+     *                          the second computer buffer.
+     * @param      arrayResult  Pointer to the graphics native memory pointer of
+     *                          the result computer buffer.
+     * @param      arraySize    Size of the arrays.
+     *
+     * @param[in]  nbrElementToRetrieve  Defined the number of element that
+     * needs to be retrieve by CPU from the result compute buffer.
+     * @return     Pointer to the created ActionVectorAdd object.
      */
     UNITY_INTERFACE_EXPORT Benchmark::ActionVectorAdd *UNITY_INTERFACE_API
     createActionVectorAdd(void *array1, void *array2, void *arrayResult,
-                          int arraySize);
+                          int arraySize, int nbrElementToRetrieve);
 
     /**
      * @brief Retrieves the last execution time of the CUDA operation.

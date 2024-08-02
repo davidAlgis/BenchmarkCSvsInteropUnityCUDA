@@ -22,14 +22,18 @@ public class VectorAddCUDA : InteropHandler
     /// <param name="buffer1">ComputeBuffer for the first input array.</param>
     /// <param name="buffer2">ComputeBuffer for the second input array.</param>
     /// <param name="resultBuffer">ComputeBuffer for the result array.</param>
+    /// <param name="nbrElementToRetrieve">
+    ///     Defined the number of element that needs to be retrieve by CPU from the result
+    ///     compute buffer.
+    /// </param>
     public void InitializeActionsAdd(int arraySize, ComputeBuffer buffer1, ComputeBuffer buffer2,
-        ComputeBuffer resultBuffer)
+        ComputeBuffer resultBuffer, int nbrElementToRetrieve)
     {
         // Create a unique action name based on the array size
         _currentActionName = "vectorAdd" + arraySize;
 
         // Instantiate the ActionVectorAdd class with the provided buffers and array size
-        _actionVectorAdd = new ActionVectorAdd(buffer1, buffer2, resultBuffer, arraySize);
+        _actionVectorAdd = new ActionVectorAdd(buffer1, buffer2, resultBuffer, arraySize, nbrElementToRetrieve);
 
         // Register the action with the interop handler
         RegisterActionUnity(_actionVectorAdd, _currentActionName);
