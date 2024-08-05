@@ -2,6 +2,10 @@ using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
 
+/// <summary>
+///     This class manages the resolution of the waves equation using Compute Shaders and CUDA,
+///     handles initialization, updates, and the display of the results.
+/// </summary>
 public class WavesFDMManager : BenchmarkManager
 {
     [SerializeField] private ComputeShader _computeShaderFDMWaves;
@@ -14,6 +18,7 @@ public class WavesFDMManager : BenchmarkManager
 
     [SerializeField] private int _volumeDepth = 10;
     [SerializeField] private WavesFDMCUDA _wavesFDMCUDA;
+    [SerializeField] private bool _displayResult;
     private float _a;
     private float _b;
     private ComputeBuffer _bufferPixelCS;
@@ -41,6 +46,9 @@ public class WavesFDMManager : BenchmarkManager
         }
     }
 
+    /// <summary>
+    ///     Initializes the compute shader and CUDA handlers, and sets up the initial state.
+    /// </summary>
     protected override void Initialize()
     {
         // define to respect the CFL c^2*dt^2/dx^2 <= 0.5
@@ -53,12 +61,16 @@ public class WavesFDMManager : BenchmarkManager
         ReInitialize();
     }
 
+    /// <summary>
+    ///     Updates the execution time for both compute shader and CUDA, and refreshes the display.
+    /// </summary>
+    /// <param name="gpuExecutionTimeCS">Output parameter for the compute shader execution time.</param>
+    /// <param name="gpuExecutionTimeCUDA">Output parameter for the CUDA execution time.</param>
     protected override void UpdateMainRecord(out float gpuExecutionTimeCS, out float gpuExecutionTimeCUDA)
     {
         int arraySize = _arraySizes[_currentArraySizeIndex];
         _titleText.text = $"Waves FDM - {arraySize} - Sample {_currentSampleCount}/{_numSamplesPerSize}";
-        gpuExecutionTimeCS = 0.0f;
-        gpuExecutionTimeCUDA = 0.0f;
+
         gpuExecutionTimeCS =
             _wavesFDMCS.Update(_ht.width, _ht.height, _ht.volumeDepth, _bufferPixelCS, ref _pixelArray);
         gpuExecutionTimeCUDA = _wavesFDMCUDA.ComputeWavesFDM();
@@ -67,6 +79,9 @@ public class WavesFDMManager : BenchmarkManager
         UpdateDisplayTexture();
     }
 
+    /// <summary>
+    ///     Reinitializes resources for the next array size in the benchmark.
+    /// </summary>
     protected override void ReInitialize()
     {
         base.ReInitialize();
@@ -98,20 +113,39 @@ public class WavesFDMManager : BenchmarkManager
         // Initialize the display texture
         _textureForDisplayCS = new Texture2D(size, size, TextureFormat.RFloat, false);
         _textureForDisplayCUDA = new Texture2D(size, size, TextureFormat.RFloat, false);
-        _rawImageCS.texture = _textureForDisplayCS;
-        _rawImageCUDA.texture = _textureForDisplayCUDA;
+        if (_displayResult)
+        {
+            _rawImageCS.texture = _textureForDisplayCS;
+            _rawImageCUDA.texture = _textureForDisplayCUDA;
+        }
+        else
+        {
+            _rawImageCS.gameObject.SetActive(false);
+            _rawImageCUDA.gameObject.SetActive(false);
+        }
+
         _wavesFDMCS.Init(ref _htNew, ref _ht,
             ref _htOld, _computeShaderFDMWaves, _computeShaderSwitchTex, _a, _b, _arraySizes[_currentArraySizeIndex],
             _volumeDepth, _bufferPixelCS);
         _wavesFDMCUDA.InitializeActionsWavesFDM(_htNewCUDA, _htCUDA, _htOldCUDA,
             size, _volumeDepth, _a, _b);
         _wavesFDMCUDA.ComputeWavesFDM();
+
+        // instead of initializing the texture of CUDA manually as we did with the texture above
+        // , we just copy the value of the render texture use for compute shader in texture2DArray for CUDA. With that, we are sure that they are sync. 
         CopyRenderTextureToTexture2DArray(_htNew, _htNewCUDA);
         CopyRenderTextureToTexture2DArray(_ht, _htCUDA);
         CopyRenderTextureToTexture2DArray(_htOld, _htOldCUDA);
         _hasBeenReleased = false;
     }
 
+    /// <summary>
+    ///     Creates a RenderTexture with the specified dimensions and volume depth.
+    /// </summary>
+    /// <param name="width">The width of the texture.</param>
+    /// <param name="height">The height of the texture.</param>
+    /// <param name="depth">The volume depth of the texture.</param>
+    /// <returns>A newly created RenderTexture.</returns>
     private RenderTexture CreateRenderTexture(int width, int height, int depth)
     {
         RenderTexture texture = new(width, height, 0, RenderTextureFormat.RFloat)
@@ -124,6 +158,13 @@ public class WavesFDMManager : BenchmarkManager
         return texture;
     }
 
+    /// <summary>
+    ///     Creates a Texture2DArray with the specified dimensions and volume depth.
+    /// </summary>
+    /// <param name="width">The width of the texture array.</param>
+    /// <param name="height">The height of the texture array.</param>
+    /// <param name="depth">The volume depth of the texture array.</param>
+    /// <returns>A newly created Texture2DArray.</returns>
     private Texture2DArray CreateTexture2DArray(int width, int height, int depth)
     {
         Texture2DArray textureArray = new(width, height, depth, TextureFormat.RFloat, false, true);
@@ -131,6 +172,10 @@ public class WavesFDMManager : BenchmarkManager
         return textureArray;
     }
 
+    /// <summary>
+    ///     Initializes the specified RenderTextures with default values and a central circle.
+    /// </summary>
+    /// <param name="textures">The RenderTextures to initialize.</param>
     private void InitializeTextures(params RenderTexture[] textures)
     {
         foreach (RenderTexture texture in textures)
@@ -174,6 +219,11 @@ public class WavesFDMManager : BenchmarkManager
         }
     }
 
+    /// <summary>
+    ///     Copies the contents of a RenderTexture to a Texture2DArray.
+    /// </summary>
+    /// <param name="renderTexture">The source RenderTexture.</param>
+    /// <param name="textureArray">The destination Texture2DArray.</param>
     private void CopyRenderTextureToTexture2DArray(RenderTexture renderTexture, Texture2DArray textureArray)
     {
         for (int layer = 0; layer < textureArray.depth; layer++)
@@ -182,12 +232,19 @@ public class WavesFDMManager : BenchmarkManager
         }
     }
 
+    /// <summary>
+    ///     Updates the display texture by copying data from the height textures.
+    /// </summary>
     private void UpdateDisplayTexture()
     {
-        // Copy the first texture of the array (_ht) to _textureForDisplay
-        Graphics.CopyTexture(_ht, 1, 0, _textureForDisplayCS, 0, 0);
+        if (_displayResult)
+        {
+            // Copy the first texture of the array (_ht) to _textureForDisplayCS
+            Graphics.CopyTexture(_ht, 1, 0, _textureForDisplayCS, 0, 0);
 
-        Graphics.CopyTexture(_htCUDA, 1, 0, _textureForDisplayCUDA, 0, 0);
+            // Copy the first texture of the array (_htCUDA) to _textureForDisplayCUDA
+            Graphics.CopyTexture(_htCUDA, 1, 0, _textureForDisplayCUDA, 0, 0);
+        }
     }
 
     /// <summary>

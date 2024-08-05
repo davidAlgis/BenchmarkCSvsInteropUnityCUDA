@@ -96,8 +96,14 @@ public class BenchmarkManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    ///     Performs any necessary initialization.
+    /// </summary>
     protected virtual void Initialize() { }
 
+    /// <summary>
+    ///     Updates the state before starting to record profiling data.
+    /// </summary>
     protected virtual void UpdateBeforeRecord()
     {
         _profileTextCS.text = "Average Time CS: loading...";
@@ -111,13 +117,22 @@ public class BenchmarkManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    ///     Records profiling data for the main computational tasks and call the main computational task for compute shader and
+    ///     CUDA
+    /// </summary>
+    /// <param name="gpuExecutionTimeCS">The execution time for the compute shader.</param>
+    /// <param name="gpuExecutionTimeCUDA">The execution time for the CUDA implementation.</param>
     protected virtual void UpdateMainRecord(out float gpuExecutionTimeCS, out float gpuExecutionTimeCUDA)
     {
         gpuExecutionTimeCS = 0.0f;
         gpuExecutionTimeCUDA = 0.0f;
     }
 
-    protected virtual void UpdatePostSample()
+    /// <summary>
+    ///     Updates the state after completing the required number of samples.
+    /// </summary>
+    protected void UpdatePostSample()
     {
         // log the data associated to the test
         LogProfilingSummary();
@@ -145,6 +160,9 @@ public class BenchmarkManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    ///     Re-initializes the state for the next array size.
+    /// </summary>
     protected virtual void ReInitialize() { }
 
     /// <summary>

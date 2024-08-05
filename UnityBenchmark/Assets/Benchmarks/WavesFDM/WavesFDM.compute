@@ -39,7 +39,7 @@ void WavesFDM(uint3 id : SV_DispatchThreadID)
     const int3 ijMin1 = int3(i, j - 1, id.z);
     const int3 ijPlus1 = int3(i, j + 1, id.z);
 
-    // h(t+dt,i,j) = damping * (a(h(t,i+1,j) +h(t,i-1,j) + h(t,i,j+1) + h(t,i,j-1)) + b * h(t,i,j) - h(t-dt, i,j))
+    // h(t+dt,i,j) = a(h(t,i+1,j) +h(t,i-1,j) + h(t,i,j+1) + h(t,i,j-1)) + b * h(t,i,j) - h(t-dt, i,j)
     HtNew[ij] = A * (Ht[iPlus1j].x + Ht[iMin1j].x + Ht[ijPlus1].x + Ht[ijMin1].x)
         + B * Ht[ij].x - HtOld[ij].x;
 }

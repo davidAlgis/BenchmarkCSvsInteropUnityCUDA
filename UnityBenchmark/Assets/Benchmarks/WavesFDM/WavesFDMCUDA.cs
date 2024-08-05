@@ -6,7 +6,7 @@ using UnityEngine;
 /// </summary>
 public class WavesFDMCUDA : InteropHandler
 {
-    // Instance of the ActionWavesFDM class to handle vector addition
+    // Instance of the ActionWavesFDM class to handle waves equation resolution
     private ActionWavesFDM _actionWavesFDM;
 
     // Stores the current action name

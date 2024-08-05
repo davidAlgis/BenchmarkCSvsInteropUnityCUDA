@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using UnityEngine;
 
 /// <summary>
-///     This class handles the vector addition action using an external plugin for CUDA operations.
+///     This class performs a resolution of waves equation using an external plugin for CUDA operations.
 /// </summary>
 public class ActionWavesFDM : ActionUnity.ActionUnity
 {

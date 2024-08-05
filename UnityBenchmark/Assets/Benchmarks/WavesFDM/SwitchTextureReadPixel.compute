@@ -19,18 +19,24 @@ int Depth;
 [numthreads(NUM_THREADS_DIM_X, NUM_THREADS_DIM_Y, NUM_THREADS_DIM_Z)]
 void SwitchTexReadPixel(uint3 id : SV_DispatchThreadID)
 {
+    // Check if the thread indices are within the bounds of the texture
     if (id.x >= Size || id.y >= Size || id.z >= Depth)
     {
         return;
     }
+
+    // Calculate the 3D index
     const int3 ij = int3(id.x, id.y, id.z);
 
+    // Read the values from the textures
     const float htNewIJ = HtNew[ij];
     const float htIJ = Ht[ij];
 
+    // Write the new values to the appropriate textures
     Ht[ij] = htNewIJ;
     HtOld[ij] = htIJ;
 
+    // If the current thread is processing the (0, 0, 0) pixel, store the value in the PixelBuffer
     if (id.x == 0 && id.y == 0 && id.z == 0)
     {
         PixelBuffer[0] = htNewIJ;
