@@ -3,6 +3,7 @@ using System.IO;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 ///     This class manages the vector addition process and profiling.
@@ -58,8 +59,6 @@ public class BenchmarkManager : MonoBehaviour
     private float _totalExecutionTimeCS;
     private float _totalExecutionTimeCUDA;
 
-    protected virtual void Initialize() { }
-
     /// <summary>
     ///     Initializes the components and starts the profiling process.
     /// </summary>
@@ -96,6 +95,8 @@ public class BenchmarkManager : MonoBehaviour
             UpdatePostSample();
         }
     }
+
+    protected virtual void Initialize() { }
 
     protected virtual void UpdateBeforeRecord()
     {
@@ -146,17 +147,34 @@ public class BenchmarkManager : MonoBehaviour
 
     protected virtual void ReInitialize() { }
 
-    protected virtual void EndTest()
+    /// <summary>
+    ///     Ends the current test. If there are more scenes in the build settings, it will load the next scene.
+    ///     Otherwise, it will export the profiling data to a CSV file and quit the application.
+    /// </summary>
+    private void EndTest()
     {
         // if we are at the end we export all the data to a csv and stop the application
         Debug.Log("All tests completed. Export to csv the result.");
         ExportToCsv();
-        // we stop the application
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-        EditorApplication.isPlaying = false;
-#else
-                Application.Quit();
+
+        // Get the current active scene's build index
+        int currentSceneIndex = SceneManager.GetActiveScene().buildIndex;
+
+        // Check if there is a next scene in the build settings
+        if (currentSceneIndex + 1 < SceneManager.sceneCountInBuildSettings)
+        {
+            // Load the next scene
+            SceneManager.LoadScene(currentSceneIndex + 1);
+        }
+        else
+        {
+            // No more scenes to load, quit the application
+#if UNITY_EDITOR
+            EditorApplication.isPlaying = false;
+#elif DEVELOPMENT_BUILD
+        Application.Quit();
 #endif
+        }
     }
 
     /// <summary>
@@ -306,7 +324,11 @@ public class BenchmarkManager : MonoBehaviour
     /// </summary>
     private void ExportToCsv()
     {
-        string filePath = Path.Combine(Application.dataPath, "ProfilingResults.csv");
+        string sceneName = SceneManager.GetActiveScene().name;
+        string graphicsAPI = SystemInfo.graphicsDeviceType.ToString();
+        string fileName = $"ProfilingResults - {sceneName} - {_numSamplesPerSize} - {graphicsAPI}.csv";
+        string filePath = Path.Combine(Application.dataPath, fileName);
+
         using (StreamWriter writer = new(filePath))
         {
             // Write CSV header
