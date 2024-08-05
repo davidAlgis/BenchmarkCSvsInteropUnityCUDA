@@ -21,7 +21,10 @@ void Reduce(uint tid : SV_GroupIndex, uint3 groupIdx : SV_GroupID)
     {
         partialSums[tid] = arrayToSum[i];
     }
-
+    else
+    {
+        partialSums[tid] = 0;
+    }
     GroupMemoryBarrierWithGroupSync();
 
     for (uint s = THREADS_PER_GROUP / 2; s > 0; s >>= 1)
@@ -35,18 +38,15 @@ void Reduce(uint tid : SV_GroupIndex, uint3 groupIdx : SV_GroupID)
 
     if (tid == 0)
     {
-        bool lockAcquired = false;
-        while (!lockAcquired)
+        int old = 1;
+        while (old != 0)
         {
-            InterlockedCompareExchange(spinlock[0], 0, 1, lockAcquired);
+            InterlockedCompareExchange(spinlock[0], 0, 1, old);
         }
 
         resultReduce[0] += partialSums[0];
 
-        spinlock[0] = 0; // Release the lock
-
         // RELEASE 
-        float old;
         InterlockedExchange(spinlock[0], 0, old);
     }
 }

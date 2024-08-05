@@ -170,7 +170,7 @@ public class BenchmarkManager : MonoBehaviour
         for (int i = 0; i < length; i++)
         {
             // array[i] = Random.Range(min, max);
-            array[i] = 0.01f;
+            array[i] = 1f;
         }
 
         return array;

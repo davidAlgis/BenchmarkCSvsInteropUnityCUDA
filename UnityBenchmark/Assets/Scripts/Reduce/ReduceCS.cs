@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 /// <summary>
 ///     This class performs vector addition using Compute shader and measures the execution time.
@@ -50,14 +51,14 @@ public class ReduceCS
     /// <param name="resultBuffer">The compute buffer to store the result.</param>
     /// <param name="resultArray">The array to store the result after computation.</param>
     /// <returns>The execution time in milliseconds.</returns>
-    public float ComputeSum(ComputeBuffer resultBuffer, ref float[] resultArray)
+    public float ComputeSum(ComputeBuffer resultBuffer, int arraySize, ref float[] resultArray)
     {
         // Start the stopwatch
         _stopwatch = Stopwatch.StartNew();
 
         // Calculate the number of thread groups needed
-        int threadGroupX = Mathf.CeilToInt((float)resultArray.Length / _numThreadsX);
-
+        int threadGroupX = Mathf.CeilToInt((float)arraySize / _numThreadsX);
+        Debug.Log("threadGroupX = " + threadGroupX);
         // Dispatch the compute shader
         _computeShader.Dispatch(_kernelHandle, threadGroupX, 1, 1);
 

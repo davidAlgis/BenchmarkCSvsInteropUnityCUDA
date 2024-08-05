@@ -89,10 +89,10 @@ public class ReduceManager : BenchmarkManager
             InitializeArrays(arraySize);
         }
 
-        _spinlockBuffer.SetData(new[] { 0 });
+        // _spinlockBuffer.SetData(new[] { 0 });
         _resultBufferCS.SetData(new[] { 0 });
         // Perform reduction using compute shader
-        gpuExecutionTimeCS = _reduceCS.ComputeSum(_resultBufferCS, ref _resultArray);
+        gpuExecutionTimeCS = _reduceCS.ComputeSum(_resultBufferCS, arraySize, ref _resultArray);
 
         // Perform reduction using CUDA
         gpuExecutionTimeCUDA = _reduceCuda.UpdateReduce();
@@ -130,6 +130,7 @@ public class ReduceManager : BenchmarkManager
         _resultArray = new float[1];
         _bufferCUDA.SetData(_array);
         _bufferCS.SetData(_array);
+        _spinlockBuffer.SetData(new[] { 0 });
     }
 
     /// <summary>
