@@ -6,6 +6,15 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/VectorAdd.unity
+    path: Assets/Benchmarks/GetData/GetData.unity
+    guid: c9d111a65d318664db81955a3468f6a2
+  - enabled: 1
+    path: Assets/Benchmarks/VectorAdd/VectorAdd.unity
     guid: e54f22a4822ad5843b32f68de238b716
+  - enabled: 1
+    path: Assets/Benchmarks/Reduce/Reduce.unity
+    guid: f667c80ada40f4442ac1a120def06323
+  - enabled: 1
+    path: Assets/Benchmarks/WavesFDM/WavesFDM.unity
+    guid: 50453df53d90dc94c9f0d6e2e82f7c63
   m_configObjects: {}
