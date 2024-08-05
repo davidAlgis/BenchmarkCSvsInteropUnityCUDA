@@ -1,9 +1,12 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
+using Newtonsoft.Json;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Random = UnityEngine.Random;
 
 /// <summary>
 ///     This class manages the vector addition process and profiling.
@@ -17,7 +20,7 @@ public class BenchmarkManager : MonoBehaviour
         7500000, 10000000
     };
 
-    [SerializeField] protected int _numSamplesPerSize = 10000;
+    [SerializeField] protected int _numSamplesPerSize = 1000;
 
     // UI components for displaying profiling information
     // Reference to TextMeshPro component for displaying CS profiling info
@@ -99,7 +102,76 @@ public class BenchmarkManager : MonoBehaviour
     /// <summary>
     ///     Performs any necessary initialization.
     /// </summary>
-    protected virtual void Initialize() { }
+    protected virtual void Initialize()
+    {
+        LoadConfig();
+    }
+
+    private static string Combine(string path1, string path2)
+    {
+        if (path1 == null)
+        {
+            return path2;
+        }
+
+        if (path2 == null)
+        {
+            return path1;
+        }
+
+        return path1.Trim().TrimEnd(Path.DirectorySeparatorChar)
+               + Path.DirectorySeparatorChar
+               + path2.Trim().TrimStart(Path.DirectorySeparatorChar);
+    }
+
+    /// <summary>
+    ///     Loads the configuration from Config.json.
+    /// </summary>
+    private void LoadConfig()
+    {
+        string currentDirectory = Directory.GetCurrentDirectory();
+        ;
+#if UNITY_EDITOR
+        string configPath = Combine(Application.dataPath, "Config.json");
+#else
+        string configPath = Combine(currentDirectory, "Config.json");
+#endif
+
+        if (File.Exists(configPath))
+        {
+            try
+            {
+                string jsonContent = File.ReadAllText(configPath);
+                Config config = JsonConvert.DeserializeObject<Config>(jsonContent);
+                if (config != null)
+                {
+                    _numSamplesPerSize = config.NumSamplesPerSize;
+                    Debug.Log($"Config loaded from {configPath}. NumSamplesPerSize: {_numSamplesPerSize}");
+                }
+                else
+                {
+                    Debug.LogError("Failed to deserialize Config.json");
+                }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Error reading or parsing Config.json: {e.Message}");
+            }
+        }
+        else
+        {
+            Debug.LogError($"Current Directory: {currentDirectory}");
+            Debug.LogError($"Config.json not found at path: {configPath}");
+
+            // List files in the current directory
+            string[] files = Directory.GetFiles(currentDirectory);
+            Debug.LogError("Files in current directory:");
+            foreach (string file in files)
+            {
+                Debug.LogError(file);
+            }
+        }
+    }
 
     /// <summary>
     ///     Updates the state before starting to record profiling data.
@@ -393,4 +465,9 @@ public class ProfilingDataSum
     public float StandardDeviationCUDA { get; set; } // Standard deviation for CUDA execution time
 
     public float VarianceCUDA { get; set; } // Variance for CUDA execution time
+}
+
+public class Config
+{
+    public int NumSamplesPerSize { get; set; }
 }

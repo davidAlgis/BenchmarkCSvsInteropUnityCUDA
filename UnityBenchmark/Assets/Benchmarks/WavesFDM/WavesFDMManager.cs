@@ -51,11 +51,11 @@ public class WavesFDMManager : BenchmarkManager
     /// </summary>
     protected override void Initialize()
     {
+        base.Initialize();
         // define to respect the CFL c^2*dt^2/dx^2 <= 0.5
         float c = Mathf.Sqrt(0.45f) * _dx / _dt;
         _a = c * c * _dt * _dt / (_dx * _dx);
         _b = 2 - 4 * _a;
-        base.Initialize();
         _wavesFDMCUDA.InitializeInteropHandler();
         _wavesFDMCS = new WavesFDMCS();
         ReInitialize();

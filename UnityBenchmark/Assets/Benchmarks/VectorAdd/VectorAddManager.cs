@@ -56,6 +56,7 @@ public class VectorAddManager : BenchmarkManager
     /// </summary>
     protected override void Initialize()
     {
+        base.Initialize();
         _vectorAddCompute = new VectorAddCS();
         InitializeBuffers(_arraySizes[_currentArraySizeIndex]);
         InitializeArrays(_arraySizes[_currentArraySizeIndex]);

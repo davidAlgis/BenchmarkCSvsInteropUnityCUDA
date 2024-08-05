@@ -291,7 +291,7 @@ MonoBehaviour:
   _profileTextCUDA: {fileID: 1379051417}
   _profileTextDifference: {fileID: 1199873797}
   _titleText: {fileID: 1367828938}
-  _waitTimeBeforeClocking: 1
+  _waitTimeBeforeClocking: 5
   _computeShaderFDMWaves: {fileID: 7200000, guid: 36d9e749945bf7843a3b5dfab12c222c, type: 3}
   _computeShaderSwitchTex: {fileID: 7200000, guid: 76670188adef1a049bb0c9be76b96b2d, type: 3}
   _dx: 0.1
@@ -300,6 +300,7 @@ MonoBehaviour:
   _rawImageCUDA: {fileID: 35895643}
   _volumeDepth: 10
   _wavesFDMCUDA: {fileID: 53567404}
+  _displayResult: 0
 --- !u!114 &53567404
 MonoBehaviour:
   m_ObjectHideFlags: 0

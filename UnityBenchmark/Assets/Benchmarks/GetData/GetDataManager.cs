@@ -1,9 +1,5 @@
-using System.Collections.Generic;
 using System.Diagnostics;
-using TMPro;
 using UnityEngine;
-using UnityEngine.Serialization;
-using Debug = UnityEngine.Debug;
 
 /// <summary>
 ///     This class manages the copy from GPU to CPU of a buffer process and profiling.
@@ -19,9 +15,9 @@ public class GetDataManager : BenchmarkManager
     // Compute buffers for GPU computation
     private ComputeBuffer _bufferCS;
     private ComputeBuffer _bufferCUDA;
+    private bool _hasBeenRelease;
 
     private bool _randomizedEachFrame;
-    private bool _hasBeenRelease;
 
     /// <summary>
     ///     Initializes the components and starts the profiling process.
@@ -32,11 +28,20 @@ public class GetDataManager : BenchmarkManager
         base.Start();
     }
 
+    private void OnDestroy()
+    {
+        if (!_hasBeenRelease)
+        {
+            ReleaseBuffers();
+        }
+    }
+
     /// <summary>
     ///     Initializes the components specific to vector addition.
     /// </summary>
     protected override void Initialize()
     {
+        base.Initialize();
         InitializeBuffers(_arraySizes[_currentArraySizeIndex]);
         InitializeArrays(_arraySizes[_currentArraySizeIndex]);
         _getDataCuda.InitializeActionsGetData(_arraySizes[_currentArraySizeIndex], _bufferCUDA);
@@ -130,13 +135,5 @@ public class GetDataManager : BenchmarkManager
         _getDataCuda.DestroyActionsGetData();
         _bufferCUDA.Release();
         _bufferCS.Release();
-    }
-
-    private void OnDestroy()
-    {
-        if (!_hasBeenRelease)
-        {
-            ReleaseBuffers();
-        }
     }
 }
