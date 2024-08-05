@@ -3,12 +3,26 @@ import matplotlib.pyplot as plt
 import argparse
 import os
 
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+
 # Set up argument parser
 parser = argparse.ArgumentParser(description='Plot execution times from CSV.')
 parser.add_argument('-i', '--input', type=str,
                     default='ProfilingResults.csv', help='Input CSV file path')
 parser.add_argument('-t', '--title', type=str,
                     default='Execution Sum Vector', help='Title of the graph')
+parser.add_argument('-s', '--show', type=str2bool,
+                    default='false', help='If true will show the graph, otherwise it won\'t')
 args = parser.parse_args()
 
 # Check if the input file exists
@@ -56,4 +70,5 @@ while os.path.isfile(output_file_name):
 
 # Save the plot with the unique file name
 plt.savefig(output_file_name)
-plt.show()
+if (args.show):
+    plt.show()
