@@ -38,7 +38,8 @@ class ActionFDMWaves : Action
     int Start() override;
 
     /**
-     * @brief Updates the action by performing the cuda memcpy using CUDA.
+     * @brief Updates the action by performing the resolution of the waves
+     * equation using CUDA.
      * @return int Returns 0 on success, error code otherwise.
      */
     int Update() override;
@@ -61,45 +62,54 @@ class ActionFDMWaves : Action
 
     private:
     /**
-     * @brief     Pointer to the buffer to retrieve
+     * @brief     the variable a = c^2 dt^2/dx^2
      */
-    Buffer *_buffer;
+    float _a;
 
     /**
-     * @brief     Pointer to cuda device array that will be use by CUDA
+     * @brief     2-4a
      */
-    float *d_array;
+    float _b;
+    /**
+     * @brief     Contains the height field at time t
+     */
+    Texture *_ht;
 
     /**
-     * @brief     Pointer to the host array that will be the copy of the device
-     * array on host side
+     * @brief     Contains the height field at time t-dt
      */
-    float *h_array;
+    Texture *_htOld;
 
     /**
-     * @brief     Size of the arrays
+     * @brief     Contains the height field at time t+dt
      */
-    int _arraySize;
+    Texture *_htNew;
 
     /**
      * @brief     Stores the execution time of the CUDA operation
      */
     float _execTime;
+
+    /**
+     * @brief     Host array that will contains one pixel of ht to sync CPU-GPU
+     */
+    float *h_pixel;
+
+    /**
+     * @brief     Device array that will contains one pixel of ht to sync
+     * CPU-GPU
+     */
+    float *d_pixel;
 };
 
 } // namespace Benchmark
 
 extern "C"
 {
-    /**
-     * @brief Creates an ActionFDMWaves object.
-     * @param arrayToGet Pointer to the graphics native memory pointer of the
-     * compute buffer to retrieve
-     * @param arraySize Size of the arrays.
-     * @return Pointer to the created ActionFDMWaves object.
-     */
+
     UNITY_INTERFACE_EXPORT Benchmark::ActionFDMWaves *UNITY_INTERFACE_API
-    createActionFDMWaves(void *arrayToGet, int arraySize);
+    createActionFDMWaves(void *htNewPtr, void *htPtr, void *htOldPtr, int width,
+                         int height, int depth, float a, float b);
 
     /**
      * @brief Retrieves the last execution time of the CUDA operation.

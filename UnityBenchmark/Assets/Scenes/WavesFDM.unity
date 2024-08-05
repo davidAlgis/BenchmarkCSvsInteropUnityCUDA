@@ -168,6 +168,78 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &35895641
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 35895642}
+  - component: {fileID: 35895644}
+  - component: {fileID: 35895643}
+  m_Layer: 5
+  m_Name: TexViewerCUDA
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &35895642
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 35895641}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8215172941300412224}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 0}
+  m_AnchoredPosition: {x: -10, y: 10}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 1, y: 0}
+--- !u!114 &35895643
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 35895641}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Texture: {fileID: 0}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+--- !u!222 &35895644
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 35895641}
+  m_CullTransparentMesh: 1
 --- !u!1 &53567397
 GameObject:
   m_ObjectHideFlags: 0
@@ -178,6 +250,7 @@ GameObject:
   m_Component:
   - component: {fileID: 53567399}
   - component: {fileID: 53567403}
+  - component: {fileID: 53567404}
   m_Layer: 0
   m_Name: WavesFDMScript
   m_TagString: Untagged
@@ -212,8 +285,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 699a6eecb3ef51a42bfccfae479dfece, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _arraySizes: 400000000001000000020000000400000008000000100000
-  _numSamplesPerSize: 100
+  _arraySizes: 4000000000010000000200000004000000080000
+  _numSamplesPerSize: 1000
   _profileTextCS: {fileID: 814532659}
   _profileTextCUDA: {fileID: 1379051417}
   _profileTextDifference: {fileID: 1199873797}
@@ -223,8 +296,22 @@ MonoBehaviour:
   _computeShaderSwitchTex: {fileID: 7200000, guid: 76670188adef1a049bb0c9be76b96b2d, type: 3}
   _dx: 0.1
   _dt: 0.1666
-  _rawImageOneTexture: {fileID: 1219666384}
+  _rawImageCS: {fileID: 1219666384}
+  _rawImageCUDA: {fileID: 35895643}
   _volumeDepth: 10
+  _wavesFDMCUDA: {fileID: 53567404}
+--- !u!114 &53567404
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 53567397}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ffaba60a11c26744e93ac6953abced9a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &459145868
 GameObject:
   m_ObjectHideFlags: 0
@@ -715,6 +802,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6485745415217436223, guid: fe2db2c3376b59b4785e42c323673a84, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1219666383}
+    - targetCorrespondingSourceObject: {fileID: 6485745415217436223, guid: fe2db2c3376b59b4785e42c323673a84, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 35895642}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: fe2db2c3376b59b4785e42c323673a84, type: 3}
 --- !u!224 &8215172941300412224 stripped
