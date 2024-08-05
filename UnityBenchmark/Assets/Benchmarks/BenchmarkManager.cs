@@ -187,8 +187,7 @@ public class BenchmarkManager : MonoBehaviour
         float[] array = new float[length];
         for (int i = 0; i < length; i++)
         {
-            // array[i] = Random.Range(min, max);
-            array[i] = 1f;
+            array[i] = Random.Range(min, max);
         }
 
         return array;
