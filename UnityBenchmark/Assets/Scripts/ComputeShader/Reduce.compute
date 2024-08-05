@@ -5,7 +5,7 @@
 // Input data : data to sum
 StructuredBuffer<float> arrayToSum;
 // Output data : sum result
-RWStructuredBuffer<float> resultReduce;
+globallycoherent RWStructuredBuffer<float> resultReduce;
 
 RWStructuredBuffer<int> spinlock;
 
@@ -36,14 +36,16 @@ void Reduce(uint tid : SV_GroupIndex, uint3 groupIdx : SV_GroupID)
         GroupMemoryBarrierWithGroupSync();
     }
 
+
     if (tid == 0)
     {
         int old = 1;
+        [allow_uav_condition]
         while (old != 0)
         {
             InterlockedCompareExchange(spinlock[0], 0, 1, old);
         }
-
+        // DeviceMemoryBarrier();
         resultReduce[0] += partialSums[0];
 
         // RELEASE 
