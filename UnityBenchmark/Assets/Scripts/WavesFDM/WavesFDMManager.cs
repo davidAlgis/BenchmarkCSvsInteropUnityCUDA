@@ -4,7 +4,8 @@ using UnityEngine.UI;
 
 public class WavesFDMManager : BenchmarkManager
 {
-    [SerializeField] private ComputeShader _computeShader;
+    [SerializeField] private ComputeShader _computeShaderFDMWaves;
+    [SerializeField] private ComputeShader _computeShaderSwitchTex;
 
     [SerializeField] private float _dx = 0.1f;
     [SerializeField] private float _dt = 0.5f;
@@ -13,12 +14,14 @@ public class WavesFDMManager : BenchmarkManager
     [SerializeField] private int _volumeDepth = 10;
     private float _a;
     private float _b;
+    private ComputeBuffer _bufferPixelCS;
 
-    private bool _hasBeenReleased;
+    private bool _hasBeenReleased = true;
 
     private RenderTexture _ht;
     private RenderTexture _htNew;
     private RenderTexture _htOld;
+    private float[] _pixelArray;
     private Texture2D _textureForDisplay;
 
     private WavesFDMCS _wavesFDMCS;
@@ -27,7 +30,7 @@ public class WavesFDMManager : BenchmarkManager
     {
         if (!_hasBeenReleased)
         {
-            ReleaseTextures();
+            ReleaseGraphics();
         }
     }
 
@@ -47,7 +50,7 @@ public class WavesFDMManager : BenchmarkManager
         int arraySize = _arraySizes[_currentArraySizeIndex];
         _titleText.text = $"Waves FDM - {arraySize} - Sample {_currentSampleCount}/{_numSamplesPerSize}";
         gpuExecutionTimeCS =
-            _wavesFDMCS.Update(ref _htNew, ref _ht, ref _htOld, _ht.width, _ht.height, _ht.volumeDepth);
+            _wavesFDMCS.Update(_ht.width, _ht.height, _ht.volumeDepth, _bufferPixelCS, ref _pixelArray);
         gpuExecutionTimeCUDA = 0.0f; // Assuming CUDA is not used in this case
 
         // Update the display texture
@@ -57,13 +60,18 @@ public class WavesFDMManager : BenchmarkManager
     protected override void ReInitialize()
     {
         base.ReInitialize();
-        print("reinit");
         int size = _arraySizes[_currentArraySizeIndex];
+        if (_hasBeenReleased == false)
+        {
+            ReleaseGraphics();
+        }
 
         // Allocate and initialize RenderTextures
         _htNew = CreateRenderTexture(size, size, _volumeDepth);
         _ht = CreateRenderTexture(size, size, _volumeDepth);
         _htOld = CreateRenderTexture(size, size, _volumeDepth);
+        _bufferPixelCS = new ComputeBuffer(1, sizeof(float));
+        _pixelArray = new[] { 0.0f };
 
         // Initialize textures with some values if needed
         InitializeTextures(_ht, _htNew, _htOld);
@@ -71,7 +79,10 @@ public class WavesFDMManager : BenchmarkManager
         // Initialize the display texture
         _textureForDisplay = new Texture2D(size, size, TextureFormat.RFloat, false);
         _rawImageOneTexture.texture = _textureForDisplay;
-        _wavesFDMCS.Init(_computeShader, _a, _b, _arraySizes[_currentArraySizeIndex]);
+        _wavesFDMCS.Init(ref _htNew, ref _ht,
+            ref _htOld, _computeShaderFDMWaves, _computeShaderSwitchTex, _a, _b, _arraySizes[_currentArraySizeIndex],
+            _volumeDepth, _bufferPixelCS);
+        _hasBeenReleased = false;
     }
 
     private RenderTexture CreateRenderTexture(int width, int height, int depth)
@@ -137,7 +148,7 @@ public class WavesFDMManager : BenchmarkManager
     /// <summary>
     ///     Releases the render textures.
     /// </summary>
-    private void ReleaseTextures()
+    private void ReleaseGraphics()
     {
         _hasBeenReleased = true;
 
@@ -158,5 +169,7 @@ public class WavesFDMManager : BenchmarkManager
             _htOld.Release();
             _htOld = null;
         }
+
+        _bufferPixelCS.Release();
     }
 }

@@ -17,15 +17,16 @@ RWTexture2DArray<float> Ht;
 
 // size of the texture - 1
 int SizeTextureMin1;
+int Depth;
 
-[numthreads(NUM_THREADS_DIM_X, NUM_THREADS_DIM_Y,1)]
+[numthreads(NUM_THREADS_DIM_X, NUM_THREADS_DIM_Y,NUM_THREADS_DIM_Z)]
 void WavesFDM(uint3 id : SV_DispatchThreadID)
 {
     //we shift the border to avoid using a if on it to set the border to 0
     const int i = id.x;
     const int j = id.y;
     // don't apply the scheme on the border as we needs the neighbors
-    if (i <= 0 || i >= SizeTextureMin1 || j <= 0 || j >= SizeTextureMin1)
+    if (i <= 0 || i >= SizeTextureMin1 || j <= 0 || j >= SizeTextureMin1 || id.z >= Depth)
     {
         return;
     }
@@ -39,6 +40,6 @@ void WavesFDM(uint3 id : SV_DispatchThreadID)
     const int3 ijPlus1 = int3(i, j + 1, id.z);
 
     // h(t+dt,i,j) = damping * (a(h(t,i+1,j) +h(t,i-1,j) + h(t,i,j+1) + h(t,i,j-1)) + b * h(t,i,j) - h(t-dt, i,j))
-    HtNew[ij] = (A * (Ht[iPlus1j].x + Ht[iMin1j].x + Ht[ijPlus1].x + Ht[ijMin1].x)
-        + B * Ht[ij].x - HtOld[ij].x);
+    HtNew[ij] = A * (Ht[iPlus1j].x + Ht[iMin1j].x + Ht[ijPlus1].x + Ht[ijMin1].x)
+        + B * Ht[ij].x - HtOld[ij].x;
 }

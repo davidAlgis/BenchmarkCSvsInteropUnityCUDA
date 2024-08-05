@@ -1,0 +1,38 @@
+#pragma kernel SwitchTexReadPixel
+
+#define NUM_THREADS_DIM_X 8
+#define NUM_THREADS_DIM_Y 8
+#define NUM_THREADS_DIM_Z 1
+
+// Height of waves
+RWTexture2DArray<float> HtNew;
+RWTexture2DArray<float> HtOld;
+RWTexture2DArray<float> Ht;
+// Buffer to store the read pixel value
+RWStructuredBuffer<float> PixelBuffer;
+
+// size of the texture
+int Size;
+int Depth;
+
+
+[numthreads(NUM_THREADS_DIM_X, NUM_THREADS_DIM_Y, NUM_THREADS_DIM_Z)]
+void SwitchTexReadPixel(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= Size || id.y >= Size || id.z >= Depth)
+    {
+        return;
+    }
+    const int3 ij = int3(id.x, id.y, id.z);
+
+    const float htNewIJ = HtNew[ij];
+    const float htIJ = Ht[ij];
+
+    Ht[ij] = htNewIJ;
+    HtOld[ij] = htIJ;
+
+    if (id.x == 0 && id.y == 0 && id.z == 0)
+    {
+        PixelBuffer[0] = htNewIJ;
+    }
+}

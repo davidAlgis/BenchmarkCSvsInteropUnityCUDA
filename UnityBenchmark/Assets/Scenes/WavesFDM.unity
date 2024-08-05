@@ -213,13 +213,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _arraySizes: 400000000001000000020000000400000008000000100000
-  _numSamplesPerSize: 1000
+  _numSamplesPerSize: 100
   _profileTextCS: {fileID: 814532659}
   _profileTextCUDA: {fileID: 1379051417}
   _profileTextDifference: {fileID: 1199873797}
   _titleText: {fileID: 1367828938}
   _waitTimeBeforeClocking: 1
-  _computeShader: {fileID: 7200000, guid: 36d9e749945bf7843a3b5dfab12c222c, type: 3}
+  _computeShaderFDMWaves: {fileID: 7200000, guid: 36d9e749945bf7843a3b5dfab12c222c, type: 3}
+  _computeShaderSwitchTex: {fileID: 7200000, guid: 76670188adef1a049bb0c9be76b96b2d, type: 3}
   _dx: 0.1
   _dt: 0.1666
   _rawImageOneTexture: {fileID: 1219666384}
