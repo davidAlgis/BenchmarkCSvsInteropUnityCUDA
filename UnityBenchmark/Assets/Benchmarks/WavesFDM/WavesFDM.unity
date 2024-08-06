@@ -291,6 +291,7 @@ MonoBehaviour:
   _profileTextCUDA: {fileID: 1379051417}
   _profileTextDifference: {fileID: 1199873797}
   _titleText: {fileID: 1367828938}
+  _graphicsAPIText: {fileID: 8215172941300412225}
   _waitTimeBeforeClocking: 5
   _computeShaderFDMWaves: {fileID: 7200000, guid: 36d9e749945bf7843a3b5dfab12c222c, type: 3}
   _computeShaderSwitchTex: {fileID: 7200000, guid: 76670188adef1a049bb0c9be76b96b2d, type: 3}
@@ -813,6 +814,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 6485745415217436223, guid: fe2db2c3376b59b4785e42c323673a84, type: 3}
   m_PrefabInstance: {fileID: 8215172941300412223}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8215172941300412225 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1806903692587406190, guid: fe2db2c3376b59b4785e42c323673a84, type: 3}
+  m_PrefabInstance: {fileID: 8215172941300412223}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

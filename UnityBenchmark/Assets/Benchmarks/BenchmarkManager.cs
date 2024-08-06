@@ -35,6 +35,9 @@ public class BenchmarkManager : MonoBehaviour
     // Reference to TextMeshPro component for displaying array size
     [SerializeField] protected TextMeshProUGUI _titleText;
 
+    // Reference to TextMeshPro component for displaying the graphics API
+    [SerializeField] protected TextMeshProUGUI _graphicsAPIText;
+
     // Time to wait before recording profiling data
     [SerializeField] private float _waitTimeBeforeClocking = 5f;
 
@@ -70,6 +73,7 @@ public class BenchmarkManager : MonoBehaviour
         _startTime = Time.time;
         _recordingStarted = false;
         Initialize();
+        _graphicsAPIText.text = "API : " + SystemInfo.graphicsDeviceType;
     }
 
     /// <summary>
