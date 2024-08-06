@@ -261,8 +261,8 @@ public class BenchmarkManager : MonoBehaviour
             // No more scenes to load, quit the application
 #if UNITY_EDITOR
             EditorApplication.isPlaying = false;
-#elif DEVELOPMENT_BUILD
-        Application.Quit();
+#else
+            Application.Quit();
 #endif
         }
     }
