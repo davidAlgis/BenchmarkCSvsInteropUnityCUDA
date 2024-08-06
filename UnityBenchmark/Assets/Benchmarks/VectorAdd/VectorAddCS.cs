@@ -49,14 +49,16 @@ public class VectorAddCS
     /// </summary>
     /// <param name="resultBuffer">The compute buffer to store the result.</param>
     /// <param name="resultArray">The array to store the result after computation.</param>
+    /// <param name="nbrElementToRetrieve">Indicate the number of element to retrieve on CPU</param>
     /// <returns>The execution time in milliseconds.</returns>
-    public float ComputeSum(ComputeBuffer resultBuffer, ref float[] resultArray, int nbrElementToRetrieve)
+    public float ComputeSum(ComputeBuffer resultBuffer, int arraySize, ref float[] resultArray,
+        int nbrElementToRetrieve)
     {
         // Start the stopwatch
         _stopwatch = Stopwatch.StartNew();
 
         // Calculate the number of thread groups needed
-        int threadGroupsX = Mathf.CeilToInt((float)resultArray.Length / _numThreadsX);
+        int threadGroupsX = Mathf.CeilToInt((float)arraySize / _numThreadsX);
 
         // Dispatch the compute shader
         _computeShader.Dispatch(_kernelHandle, threadGroupsX, 1, 1);
