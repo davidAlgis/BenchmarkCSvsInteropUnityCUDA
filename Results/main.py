@@ -19,6 +19,7 @@ def str2bool(v):
 parser = argparse.ArgumentParser(description='Plot execution times from CSV.')
 parser.add_argument('-i', '--input', type=str,
                     default='ProfilingResults.csv', help='Input CSV file path')
+parser.add_argument('-o', '--output', type=str, help='Output directory path')
 parser.add_argument('-t', '--title', type=str,
                     default='Execution Sum Vector', help='Title of the graph')
 parser.add_argument('-s', '--show', type=str2bool,
@@ -68,7 +69,8 @@ while os.path.isfile(output_file_name):
     output_file_name = f'{base_output_file_name}-{i}.png'
     i += 1
 
+out = os.path.join(args.output, output_file_name)
 # Save the plot with the unique file name
-plt.savefig(output_file_name)
+plt.savefig(out)
 if (args.show):
     plt.show()

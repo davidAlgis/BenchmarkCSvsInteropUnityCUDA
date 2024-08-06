@@ -82,7 +82,7 @@ def generate_compile_plugin(script_dir, cuda_path):
     compileProjects(project_dir, "Release")
 
 
-def build_unity(script_dir, unity_bin, num_samples):
+def build_unity(script_dir, unity_bin):
     unity_dir = os.path.join(script_dir, 'UnityBenchmark')
     print_green(
         "Build Unity project with OpenGL... It might take a few seconds...")
@@ -99,7 +99,6 @@ def build_unity(script_dir, unity_bin, num_samples):
                 shutil.copytree(s, d, dirs_exist_ok=True)
             else:
                 shutil.copy2(s, d)
-        create_config_file(unity_build_dir_gl, num_samples)
 
     print_green(
         "Build Unity project with DirectX11... It might take a few seconds...")
@@ -117,10 +116,10 @@ def build_unity(script_dir, unity_bin, num_samples):
                 shutil.copytree(s, d, dirs_exist_ok=True)
             else:
                 shutil.copy2(s, d)
-        create_config_file(unity_build_dir_dx11, num_samples)
 
 
-def benchmark(script_dir, num_tests, batchmode):
+def benchmark(script_dir, num_tests, num_samples, batchmode):
+    create_config_file(script_dir, num_samples)
     for i in range(num_tests):
         if batchmode:
             print_green(
@@ -175,11 +174,22 @@ def draw(script_dir):
         result_path = os.path.join(script_dir, 'Results', result_dir)
         if os.path.isdir(result_path):
             for csv_file in os.listdir(result_path):
-                if csv_file.endswith('.csv'):
+                if csv_file.startswith("ProfilingResults") and csv_file.endswith('.csv'):
                     csv_path = os.path.join(result_path, csv_file)
-                    draw_args = ['python', os.path.join(
-                        script_dir, 'Results', 'main.py'), '-i', csv_path, '-t', csv_path, '-s', 'False']
-                    subprocess.run(draw_args)
+                    parts = csv_file.replace(".csv", "").split(" - ")
+                    if len(parts) == 4:
+                        title_experiment = parts[1]
+                        num_sample = parts[2]
+                        graphics_api = parts[3]
+                        if graphics_api == "OpenGLCore":
+                            graphics_api = "GL"
+                        elif graphics_api == "Direct3D11":
+                            graphics_api = "DX11"
+                        # Add more mappings if necessary
+                        title_arg = f"Performance Comparison - {title_experiment} - {num_sample} Samples on {graphics_api}"
+                        draw_args = ['python', os.path.join(
+                            script_dir, 'Results', 'main.py'), '-i', csv_path, '-t', title_arg, '-s', 'False', '-o', result_path]
+                        subprocess.run(draw_args)
 
 
 def main():
@@ -216,10 +226,11 @@ def main():
         generate_compile_plugin(script_dir, args.cuda_path)
 
     if args.build_unity:
-        build_unity(script_dir, args.unityBin, args.number_samples)
+        build_unity(script_dir, args.unityBin)
 
     if args.benchmark:
-        benchmark(script_dir, args.number_tests, args.batchmode)
+        benchmark(script_dir, args.number_tests,
+                  args.number_samples, args.batchmode)
 
     if args.draw:
         draw(script_dir)
