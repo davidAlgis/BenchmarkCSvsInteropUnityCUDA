@@ -54,9 +54,11 @@ public class VectorAddCS
     public float ComputeSum(ComputeBuffer resultBuffer, int arraySize, ref float[] resultArray,
         int nbrElementToRetrieve)
     {
+        // We call GetData to make a first synchronization before chrono and to make sure that GPU and CPU are fully
+        // synchronize and that the chrono retrieve only the correct time and not other GPU execution time.
+        resultBuffer.GetData(resultArray, 0, 0, nbrElementToRetrieve);
         // Start the stopwatch
         _stopwatch = Stopwatch.StartNew();
-
         // Calculate the number of thread groups needed
         int threadGroupsX = Mathf.CeilToInt((float)arraySize / _numThreadsX);
 

@@ -54,6 +54,11 @@ int ActionVectorAdd::Start()
 
 int ActionVectorAdd::Update()
 {
+    // We call cudaDeviceSynchronize to make a first synchronization before
+    // chrono and to make sure that GPU and CPU are fully synchronize and that
+    // the chrono retrieve only the correct time and not other GPU execution
+    // time.
+    CUDA_CHECK_RETURN(cudaDeviceSynchronize());
     auto start = std::chrono::high_resolution_clock::now();
 
     kernelCallerWriteBuffer(d_array1, d_array2, d_arrayResults, _arraySize);

@@ -52,6 +52,9 @@ public class ReduceCS
     /// <returns>The execution time in milliseconds.</returns>
     public float ComputeSum(ComputeBuffer resultBuffer, int arraySize, ref float[] resultArray)
     {
+        // We call GetData to make a first synchronization before chrono and to make sure that GPU and CPU are fully
+        // synchronize and that the chrono retrieve only the correct time and not other GPU execution time.
+        resultBuffer.GetData(resultArray, 0, 0, 1);
         // Start the stopwatch
         _stopwatch = Stopwatch.StartNew();
 

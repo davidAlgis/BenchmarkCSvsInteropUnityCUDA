@@ -89,6 +89,9 @@ public class WavesFDMCS
     public float Update(int width, int height,
         int depth, ComputeBuffer pixelBuffer, ref float[] result)
     {
+        // We call GetData to make a first synchronization before chrono and to make sure that GPU and CPU are fully
+        // synchronize and that the chrono retrieve only the correct time and not other GPU execution time.
+        pixelBuffer.GetData(result, 0, 0, 1);
         // Start the stopwatch
         _stopwatch = Stopwatch.StartNew();
 

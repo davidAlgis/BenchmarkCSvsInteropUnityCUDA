@@ -35,6 +35,11 @@ int ActionGetData::Start()
 
 int ActionGetData::Update()
 {
+    // We call cudaDeviceSynchronize to make a first synchronization before
+    // chrono and to make sure that GPU and CPU are fully synchronize and that
+    // the chrono retrieve only the correct time and not other GPU execution
+    // time.
+    CUDA_CHECK_RETURN(cudaDeviceSynchronize());
     auto start = std::chrono::high_resolution_clock::now();
 
     CUDA_CHECK_RETURN(cudaMemcpy(h_array, d_array, sizeof(float) * _arraySize,
