@@ -285,7 +285,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 699a6eecb3ef51a42bfccfae479dfece, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _arraySizes: 4000000000010000000200000004000000080000
+  _arraySizes: 400000000001000000020000000400000008000000100000
   _numSamplesPerSize: 1000
   _profileTextCS: {fileID: 814532659}
   _profileTextCUDA: {fileID: 1379051417}
@@ -299,7 +299,7 @@ MonoBehaviour:
   _dt: 0.1666
   _rawImageCS: {fileID: 1219666384}
   _rawImageCUDA: {fileID: 35895643}
-  _volumeDepth: 10
+  _volumeDepth: 9
   _wavesFDMCUDA: {fileID: 53567404}
   _displayResult: 0
 --- !u!114 &53567404
