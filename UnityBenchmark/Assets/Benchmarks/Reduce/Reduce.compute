@@ -1,6 +1,6 @@
 #pragma kernel Reduce
 
-#define THREADS_PER_GROUP 256
+#define THREADS_PER_GROUP 1024
 
 // Input data : data to sum
 StructuredBuffer<float> arrayToSum;
