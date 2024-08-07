@@ -58,6 +58,18 @@ int ActionFDMWaves::Start()
 
 int ActionFDMWaves::Update()
 {
+    int warmStep = 5;
+    for (int i = 0; i < warmStep; i++)
+    {
+        kernelCallerFDMWaves(_htNew->getSurfaceObjectArray(),
+                             _htOld->getSurfaceObjectArray(),
+                             _ht->getSurfaceObjectArray(), _ht->getWidth(),
+                             _ht->getHeight(), _ht->getDepth(), _a, _b);
+        kernelCallerSwitchTexReadPixel(
+            _htNew->getSurfaceObjectArray(), _htOld->getSurfaceObjectArray(),
+            _ht->getSurfaceObjectArray(), _ht->getWidth(), _ht->getHeight(),
+            _ht->getDepth(), d_pixel);
+    }
     // We call cudaDeviceSynchronize to make a first synchronization before
     // chrono and to make sure that GPU and CPU are fully synchronize and that
     // the chrono retrieve only the correct time and not other GPU execution

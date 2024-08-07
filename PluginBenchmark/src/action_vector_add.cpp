@@ -54,6 +54,11 @@ int ActionVectorAdd::Start()
 
 int ActionVectorAdd::Update()
 {
+    int warmStep = 5;
+    for (int i = 0; i < warmStep; i++)
+    {
+        kernelCallerVectorAdd(d_array1, d_array2, d_arrayResults, _arraySize);
+    }
     // We call cudaDeviceSynchronize to make a first synchronization before
     // chrono and to make sure that GPU and CPU are fully synchronize and that
     // the chrono retrieve only the correct time and not other GPU execution

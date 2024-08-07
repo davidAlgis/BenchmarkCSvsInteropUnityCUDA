@@ -41,6 +41,15 @@ int ActionReduce::Start()
 
 int ActionReduce::Update()
 {
+    int ret;
+    int warmStep = 5;
+    for (int i = 0; i < warmStep; i++)
+    {
+        ret = reduce(d_array, d_result, d_tempStorage, _tempStorageBytes,
+                     _arraySize);
+        GRUMBLE(ret, "There has been an error during the reduce. "
+                     "Abort ActionReduce !");
+    }
     // We call cudaDeviceSynchronize to make a first synchronization before
     // chrono and to make sure that GPU and CPU are fully synchronize and that
     // the chrono retrieve only the correct time and not other GPU execution
@@ -48,7 +57,7 @@ int ActionReduce::Update()
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
     auto start = std::chrono::high_resolution_clock::now();
 
-    int ret =
+    ret =
         reduce(d_array, d_result, d_tempStorage, _tempStorageBytes, _arraySize);
     GRUMBLE(ret, "There has been an error during the reduce. "
                  "Abort ActionReduce !");

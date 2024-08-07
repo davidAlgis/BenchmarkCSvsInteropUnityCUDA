@@ -89,24 +89,37 @@ public class WavesFDMCS
     public float Update(int width, int height,
         int depth, ComputeBuffer pixelBuffer, ref float[] result)
     {
+        // Calculate the number of thread groups needed
+        int threadGroupsX = Mathf.CeilToInt((float)width / _numThreadsX);
+        int threadGroupsY = Mathf.CeilToInt((float)height / _numThreadsY);
+
+        // we first call warmStep computation to make sur timing is correctly computed
+        int warmStep = 5;
+        for (int _ = 0; _ < warmStep; _++)
+        {
+            Computation(depth, threadGroupsX, threadGroupsY);
+        }
+
         // We call GetData to make a first synchronization before chrono and to make sure that GPU and CPU are fully
         // synchronize and that the chrono retrieve only the correct time and not other GPU execution time.
         pixelBuffer.GetData(result, 0, 0, 1);
         // Start the stopwatch
         _stopwatch = Stopwatch.StartNew();
 
-        // Calculate the number of thread groups needed
-        int threadGroupsX = Mathf.CeilToInt((float)width / _numThreadsX);
-        int threadGroupsY = Mathf.CeilToInt((float)height / _numThreadsY);
-
         // Dispatch the compute shader
-        _computeShaderFDMWaves.Dispatch(_kernelFDMWavesHandle, threadGroupsX, threadGroupsY, depth);
-
-        _computeShaderSwitchTexRealPixel.Dispatch(_kernelSwitchHandle, threadGroupsX, threadGroupsY, depth);
+        Computation(depth, threadGroupsX, threadGroupsY);
         // retrieve data for synchronize CPU and GPU
         pixelBuffer.GetData(result);
         // Stop the stopwatch and return the elapsed time
         _stopwatch.Stop();
         return (float)_stopwatch.Elapsed.TotalMilliseconds;
+    }
+
+    private void Computation(int depth, int threadGroupsX, int threadGroupsY)
+    {
+        // Dispatch the compute shader
+        _computeShaderFDMWaves.Dispatch(_kernelFDMWavesHandle, threadGroupsX, threadGroupsY, depth);
+
+        _computeShaderSwitchTexRealPixel.Dispatch(_kernelSwitchHandle, threadGroupsX, threadGroupsY, depth);
     }
 }

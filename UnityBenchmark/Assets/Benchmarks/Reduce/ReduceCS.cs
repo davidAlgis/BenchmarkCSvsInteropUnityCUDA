@@ -52,16 +52,24 @@ public class ReduceCS
     /// <returns>The execution time in milliseconds.</returns>
     public float ComputeSum(ComputeBuffer resultBuffer, int arraySize, ref float[] resultArray)
     {
+        // Calculate the number of thread groups needed
+        int threadGroupX = Mathf.CeilToInt((float)arraySize / _numThreadsX);
+
+        // we first call warmStep computation to make sur timing is correctly computed
+        int warmStep = 5;
+        for (int _ = 0; _ < warmStep; _++)
+        {
+            Computation(threadGroupX);
+        }
+
         // We call GetData to make a first synchronization before chrono and to make sure that GPU and CPU are fully
         // synchronize and that the chrono retrieve only the correct time and not other GPU execution time.
         resultBuffer.GetData(resultArray, 0, 0, 1);
         // Start the stopwatch
         _stopwatch = Stopwatch.StartNew();
 
-        // Calculate the number of thread groups needed
-        int threadGroupX = Mathf.CeilToInt((float)arraySize / _numThreadsX);
         // Dispatch the compute shader
-        _computeShader.Dispatch(_kernelHandle, threadGroupX, 1, 1);
+        Computation(threadGroupX);
 
         // Retrieve one float from the result buffer, to synchronize the computation
         // (it makes easier profiling, as Unity doesn't have dedicated profiling tools for compute shader)
@@ -70,5 +78,10 @@ public class ReduceCS
         // Stop the stopwatch and return the elapsed time
         _stopwatch.Stop();
         return (float)_stopwatch.Elapsed.TotalMilliseconds;
+    }
+
+    private void Computation(int threadGroupsX)
+    {
+        _computeShader.Dispatch(_kernelHandle, threadGroupsX, 1, 1);
     }
 }

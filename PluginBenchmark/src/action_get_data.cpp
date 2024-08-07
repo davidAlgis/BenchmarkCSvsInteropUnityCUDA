@@ -35,11 +35,16 @@ int ActionGetData::Start()
 
 int ActionGetData::Update()
 {
-    // We call cudaDeviceSynchronize to make a first synchronization before
+    // We call a copy to make a first synchronization before
     // chrono and to make sure that GPU and CPU are fully synchronize and that
     // the chrono retrieve only the correct time and not other GPU execution
-    // time.
-    CUDA_CHECK_RETURN(cudaDeviceSynchronize());
+    // time. We doesn't use cudaDeviceSynchronize(), as we want to reproduce the
+    // same behavior that the unity part, which doesn't have any dedicated
+    // synchronize function, and therefore make a single float copy. As the next
+    // step will be also a copy it might be faster to launch copy and then copy
+    // then doing cudaDeviceSynchronize and then copy.
+    CUDA_CHECK_RETURN(
+        cudaMemcpy(h_array, d_array, sizeof(float), cudaMemcpyDeviceToHost));
     auto start = std::chrono::high_resolution_clock::now();
 
     CUDA_CHECK_RETURN(cudaMemcpy(h_array, d_array, sizeof(float) * _arraySize,
