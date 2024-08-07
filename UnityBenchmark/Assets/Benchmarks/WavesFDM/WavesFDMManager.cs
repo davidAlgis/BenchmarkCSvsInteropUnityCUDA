@@ -62,6 +62,17 @@ public class WavesFDMManager : BenchmarkManager
     }
 
     /// <summary>
+    ///     Updates the profiling process before recording starts.
+    /// </summary>
+    protected override void UpdateBeforeRecord()
+    {
+        _wavesFDMCS.Update(_ht.width, _ht.height, _ht.volumeDepth, _bufferPixelCS, ref _pixelArray);
+        _wavesFDMCUDA.ComputeWavesFDM();
+
+        base.UpdateBeforeRecord();
+    }
+
+    /// <summary>
     ///     Updates the execution time for both compute shader and CUDA, and refreshes the display.
     /// </summary>
     /// <param name="gpuExecutionTimeCS">Output parameter for the compute shader execution time.</param>
@@ -129,6 +140,7 @@ public class WavesFDMManager : BenchmarkManager
             _volumeDepth, _bufferPixelCS);
         _wavesFDMCUDA.InitializeActionsWavesFDM(_htNewCUDA, _htCUDA, _htOldCUDA,
             size, _volumeDepth, _a, _b);
+        _wavesFDMCS.Update(_ht.width, _ht.height, _ht.volumeDepth, _bufferPixelCS, ref _pixelArray);
         _wavesFDMCUDA.ComputeWavesFDM();
 
         // instead of initializing the texture of CUDA manually as we did with the texture above
@@ -240,10 +252,10 @@ public class WavesFDMManager : BenchmarkManager
         if (_displayResult)
         {
             // Copy the first texture of the array (_ht) to _textureForDisplayCS
-            Graphics.CopyTexture(_ht, 1, 0, _textureForDisplayCS, 0, 0);
+            Graphics.CopyTexture(_ht, 0, 0, _textureForDisplayCS, 0, 0);
 
             // Copy the first texture of the array (_htCUDA) to _textureForDisplayCUDA
-            Graphics.CopyTexture(_htCUDA, 1, 0, _textureForDisplayCUDA, 0, 0);
+            Graphics.CopyTexture(_htCUDA, 0, 0, _textureForDisplayCUDA, 0, 0);
         }
     }
 

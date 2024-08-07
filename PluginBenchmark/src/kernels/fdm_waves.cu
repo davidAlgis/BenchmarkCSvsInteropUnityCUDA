@@ -97,15 +97,13 @@ void kernelCallerFDMWaves(cudaSurfaceObject_t *htNew,
     int sizeTextureMin1 = width - 1;
 
     // Define the block and grid dimensions
-    dim3 threadsPerBlock(NUM_THREADS_DIM_X, NUM_THREADS_DIM_Y,
-                         NUM_THREADS_DIM_Z);
-    dim3 numBlocks((width + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                   (height + threadsPerBlock.y - 1) / threadsPerBlock.y,
-                   (depth + threadsPerBlock.z - 1) / threadsPerBlock.z);
+    dim3 blockSize(NUM_THREADS_DIM_X, NUM_THREADS_DIM_Y, NUM_THREADS_DIM_Z);
+    dim3 gridSize((width + blockSize.x - 1) / blockSize.x,
+                  (height + blockSize.y - 1) / blockSize.y, depth);
 
     // Launch the kernel
-    wavesFDM<<<numBlocks, threadsPerBlock>>>(htNew, htOld, ht, sizeTextureMin1,
-                                             depth, a, b);
+    wavesFDM<<<gridSize, blockSize>>>(htNew, htOld, ht, sizeTextureMin1, depth,
+                                      a, b);
 }
 
 void kernelCallerSwitchTexReadPixel(cudaSurfaceObject_t *htNew,
@@ -114,13 +112,11 @@ void kernelCallerSwitchTexReadPixel(cudaSurfaceObject_t *htNew,
                                     int height, int depth, float *d_pixel)
 {
     // Define the block and grid dimensions
-    dim3 threadsPerBlock(NUM_THREADS_DIM_X, NUM_THREADS_DIM_Y,
-                         NUM_THREADS_DIM_Z);
-    dim3 numBlocks((width + threadsPerBlock.x - 1) / threadsPerBlock.x,
-                   (height + threadsPerBlock.y - 1) / threadsPerBlock.y,
-                   (depth + threadsPerBlock.z - 1) / threadsPerBlock.z);
+    dim3 blockSize(NUM_THREADS_DIM_X, NUM_THREADS_DIM_Y, NUM_THREADS_DIM_Z);
+    dim3 gridSize((width + blockSize.x - 1) / blockSize.x,
+                  (height + blockSize.y - 1) / blockSize.y, depth);
 
     // Launch the kernel
-    switchTexReadPixel<<<numBlocks, threadsPerBlock>>>(htNew, htOld, ht, width,
-                                                       depth, d_pixel);
+    switchTexReadPixel<<<gridSize, blockSize>>>(htNew, htOld, ht, width, depth,
+                                                d_pixel);
 }
