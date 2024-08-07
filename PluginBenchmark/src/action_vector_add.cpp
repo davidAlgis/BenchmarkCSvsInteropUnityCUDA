@@ -61,7 +61,7 @@ int ActionVectorAdd::Update()
     CUDA_CHECK_RETURN(cudaDeviceSynchronize());
     auto start = std::chrono::high_resolution_clock::now();
 
-    kernelCallerWriteBuffer(d_array1, d_array2, d_arrayResults, _arraySize);
+    kernelCallerVectorAdd(d_array1, d_array2, d_arrayResults, _arraySize);
 
     // we only copy a float as in the compute shader part
     CUDA_CHECK_RETURN(cudaMemcpy(h_arrayResults, d_arrayResults,

@@ -22,8 +22,8 @@ __global__ void vectorAdd(const float *array1, const float *array2,
     }
 }
 
-void kernelCallerWriteBuffer(const float *array1, const float *array2,
-                             float *arrayResult, int arraySize)
+void kernelCallerVectorAdd(const float *array1, const float *array2,
+                           float *arrayResult, int arraySize)
 {
     // Calculate the block and grid sizes
     const std::uint32_t blockSize = 1024u;

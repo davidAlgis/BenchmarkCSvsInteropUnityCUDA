@@ -19,5 +19,5 @@
  * 1 and 2
  * @param[in]  arraySize    The array size
  */
-void kernelCallerWriteBuffer(const float *array1, const float *array2,
-                             float *arrayResult, int arraySize);
+void kernelCallerVectorAdd(const float *array1, const float *array2,
+                           float *arrayResult, int arraySize);
