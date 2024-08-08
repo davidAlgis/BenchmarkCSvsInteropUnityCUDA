@@ -170,26 +170,37 @@ def benchmark(script_dir, num_tests, num_samples, batchmode):
 
 def draw(script_dir):
     print_green("Create and save the graph of comparison")
-    for result_dir in os.listdir(os.path.join(script_dir, 'Results')):
-        result_path = os.path.join(script_dir, 'Results', result_dir)
-        if os.path.isdir(result_path):
-            for csv_file in os.listdir(result_path):
-                if csv_file.startswith("ProfilingResults") and csv_file.endswith('.csv'):
-                    csv_path = os.path.join(result_path, csv_file)
-                    parts = csv_file.replace(".csv", "").split(" - ")
-                    if len(parts) == 4:
-                        title_experiment = parts[1]
-                        num_sample = parts[2]
-                        graphics_api = parts[3]
-                        if graphics_api == "OpenGLCore":
-                            graphics_api = "GL"
-                        elif graphics_api == "Direct3D11":
-                            graphics_api = "DX11"
-                        # Add more mappings if necessary
-                        title_arg = f"Performance Comparison - {title_experiment} - {num_sample} Samples on {graphics_api}"
-                        draw_args = ['python', os.path.join(
-                            script_dir, 'Results', 'main.py'), '-i', csv_path, '-t', title_arg, '-s', 'False', '-o', result_path]
-                        subprocess.run(draw_args)
+    results_dir = os.path.join(script_dir, 'Results')
+    if not os.path.exists(results_dir):
+        print_red(
+            "Error: Results directory does not exist. Run the benchmark first.")
+        return
+
+    run_dirs = [d for d in os.listdir(results_dir) if d.startswith(
+        'UnityBenchmark-GL-') or d.startswith('UnityBenchmark-DX11-')]
+    if not run_dirs:
+        print_red("Error: No benchmark result directories found.")
+        return
+
+    for i, run_dir in enumerate(run_dirs, start=1):
+        gl_result_dir = os.path.join(results_dir, f'UnityBenchmark-GL-{i-1}')
+        dx11_result_dir = os.path.join(
+            results_dir, f'UnityBenchmark-DX11-{i-1}')
+
+        if os.path.exists(gl_result_dir) and os.path.exists(dx11_result_dir):
+            gl_csv = os.path.join(gl_result_dir, 'ProfilingResults.csv')
+            dx11_csv = os.path.join(dx11_result_dir, 'ProfilingResults.csv')
+            # Use GL-0 or DX11-0 for CUDA
+            cuda_csv = os.path.join(gl_result_dir, 'ProfilingResults.csv')
+
+            title_arg = f"Performance Comparison - Run {i}"
+
+            draw_args = ['python', os.path.join(
+                script_dir, 'Results', 'main.py'), '-igl', gl_csv, '-idx', dx11_csv, '-icu', cuda_csv, '-t', title_arg, '-s', 'False', '-o', results_dir]
+            subprocess.run(draw_args)
+        else:
+            print_red(
+                f"Error: One or more result directories do not exist for run {i}.")
 
 
 def main():
