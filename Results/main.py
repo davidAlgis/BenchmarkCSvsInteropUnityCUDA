@@ -28,7 +28,8 @@ parser.add_argument('-idx', '--input-dx11', type=str,
                     default='ProfilingResultsDX11.csv', help='Input DirectX 11 CSV file path')
 parser.add_argument('-icu', '--input-cuda', type=str,
                     default='ProfilingResultsCUDA.csv', help='Input CUDA CSV file path')
-parser.add_argument('-o', '--output', type=str, help='Output directory path')
+parser.add_argument('-o', '--output', type=str,
+                    default="Result", help='Output directory path')
 parser.add_argument('-t', '--title', type=str,
                     default='Execution Sum Vector', help='Title of the graph')
 parser.add_argument('-s', '--show', type=str2bool,
@@ -41,6 +42,8 @@ parser.add_argument('-y', '--ylim', type=str, default=None,
                     help='Y-axis limits in the format "min,max"')
 parser.add_argument('-xt', '--xticks', type=str2bool,
                     default='false', help='If true will set x-ticks to correspond to the values in ArraySize')
+parser.add_argument('-l', '--legend', type=str2bool,
+                    default='true', help='If true will add the legend, otherwise it won\'t')
 args = parser.parse_args()
 
 # Check if the input files exist
@@ -75,18 +78,28 @@ cuda_data['StandardDeviationCUDA'] = cuda_data['StandardDeviationCUDA'].str.repl
 
 # Plot the data with error bars
 plt.figure(figsize=(10, 6), dpi=args.resolution)
-plt.errorbar(gl_data['ArraySize'], gl_data['AverageExecutionTimeCS'], yerr=gl_data['StandardDeviationCS'],
-             label='Average Execution Time OpenGL', marker='.', capsize=3, linestyle='-', color=GL_COLOR, markersize=3)
-plt.errorbar(dx11_data['ArraySize'], dx11_data['AverageExecutionTimeCS'], yerr=dx11_data['StandardDeviationCS'],
-             label='Average Execution Time DirectX 11', marker='.', capsize=3, linestyle='-', color=DX11_COLOR, markersize=3)
-plt.errorbar(cuda_data['ArraySize'], cuda_data['AverageExecutionTimeCUDA'], yerr=cuda_data['StandardDeviationCUDA'],
-             label='Average Execution Time CUDA', marker='.', capsize=3, linestyle='-', color=CUDA_COLOR, markersize=3)
+line_gl = plt.errorbar(gl_data['ArraySize'], gl_data['AverageExecutionTimeCS'], yerr=gl_data['StandardDeviationCS'],
+                       label='Average Execution Time OpenGL', marker='.', capsize=3, linestyle='-', color=GL_COLOR, markersize=3)
+line_dx11 = plt.errorbar(dx11_data['ArraySize'], dx11_data['AverageExecutionTimeCS'], yerr=dx11_data['StandardDeviationCS'],
+                         label='Average Execution Time DirectX 11', marker='.', capsize=3, linestyle='-', color=DX11_COLOR, markersize=3)
+line_cuda = plt.errorbar(cuda_data['ArraySize'], cuda_data['AverageExecutionTimeCUDA'], yerr=cuda_data['StandardDeviationCUDA'],
+                         label='Average Execution Time CUDA', marker='.', capsize=3, linestyle='-', color=CUDA_COLOR, markersize=3)
 plt.xlabel('Array Size')
 plt.ylabel('Average Execution Time (ms)')
 plt.title(args.title)
-plt.legend()
 plt.grid(True)
 plt.xscale('log')
+
+if args.legend:
+    plt.legend()
+else:
+    # Create the legend separately
+    fig_legend = plt.figure(figsize=(5, 2))
+    fig_legend.legend(handles=[line_gl, line_dx11, line_cuda], labels=[
+                      'Average Execution Time OpenGL', 'Average Execution Time DirectX 11', 'Average Execution Time CUDA'], loc='center')
+    legend_out = os.path.join(args.output, 'Legend.png')
+    fig_legend.savefig(legend_out, dpi=args.resolution)
+    plt.close(fig_legend)
 
 # Set the x-axis and y-axis limits if specified
 if args.xlim:
