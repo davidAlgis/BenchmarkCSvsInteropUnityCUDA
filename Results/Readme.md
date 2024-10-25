@@ -34,12 +34,18 @@ python main.py [options]
 
 ## Example
 
-Here is an exemple of command that will generate a plot with title: _"Performance Comparison - Reduce - 1000 Sample"_, using csv in the folder `Result 1000 Sample`:
+Here are the commands to generate the 4 plots in the `Results - 10000 Sample` folder:
 
 ```
-python .\main.py -t "Performance Comparison - Reduce - 1000 Sample" -igl ".\Result 1000 Sample\UnityBenchmark-GL-0\ProfilingResults - Reduce - 1000 - OpenGLCore.csv" -idx ".\Result 1000 Sample\UnityBenchmark-DX11-4\ProfilingResults - Reduce - 1000 - Direct3D11.csv" -icu ".\Result 1000 Sample\UnityBenchmark-GL-0\ProfilingResults - Reduce - 1000 - OpenGLCore.csv" -o ".\Result 1000 Sample\Reduce" -s True
+python .\main.py -t "Performance Comparison - VectorAdd - 10000 Samples" -igl ".\Results - 10000 Sample\ProfilingResults-VectorAdd-10000-OpenGLCore.csv" -idx ".\Results - 10000 Sample\ProfilingResults-VectorAdd-10000-Direct3D11.csv" -icu ".\Results - 10000 Sample\ProfilingResults-VectorAdd-10000-OpenGLCore.csv" -o ".\Results - 10000 Sample" -s False -l False
+
+python .\main.py -t "Performance Comparison - WavesFDM - 10000 Samples" -igl ".\Results - 10000 Sample\ProfilingResults-WavesFDM-10000-OpenGLCore.csv" -idx ".\Results - 10000 Sample\ProfilingResults-WavesFDM-10000-Direct3D11.csv" -icu ".\Results - 10000 Sample\ProfilingResults-WavesFDM-10000-OpenGLCore.csv" -o ".\Results - 10000 Sample" -s False -l False
+
+python .\main.py -t "Performance Comparison - Reduce - 10000 Samples" -igl ".\Results - 10000 Sample\ProfilingResults-Reduce-10000-OpenGLCore.csv" -idx ".\Results - 10000 Sample\ProfilingResults-Reduce-10000-Direct3D11.csv" -icu ".\Results - 10000 Sample\ProfilingResults-Reduce-10000-OpenGLCore.csv" -o ".\Results - 10000 Sample" -s False -l False
+
+python .\main.py -t "Performance Comparison - GetData - 10000 Samples" -igl ".\Results - 10000 Sample\ProfilingResults-GetData-10000-OpenGLCore.csv" -idx ".\Results - 10000 Sample\ProfilingResults-GetData-10000-Direct3D11.csv" -icu ".\Results - 10000 Sample\ProfilingResults-GetData-10000-OpenGLCore.csv" -o ".\Results - 10000 Sample" -s False -l False
 ```
 
-Here is the generated output plot:
+Here is one of the generated output plot:
 
-![](Results%20-%201000%20Sample/ProfilingResult-Performance%20Comparison%20-%20Reduce%20-%201000%20Sample.png)
+![](Results%20-%2010000%20Sample/ProfilingResult-PerformanceComparison-Reduce-10000Samples.png)
