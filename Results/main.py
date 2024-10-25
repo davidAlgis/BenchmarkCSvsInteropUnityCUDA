@@ -143,9 +143,11 @@ line_cuda = plt.errorbar(cuda_data['ArraySize'],
                          linestyle='-',
                          color=CUDA_COLOR,
                          markersize=3)
-plt.xlabel('Array Size', fontsize=font_size_title)
-plt.ylabel('Average Execution Time (ms)', fontsize=font_size_title)
-plt.title(args.title, fontsize=font_size_main_title)
+plt.xlabel('Array Size', fontsize=font_size_title, labelpad=10)
+plt.ylabel('Average Execution Time (ms)',
+           fontsize=font_size_title,
+           labelpad=10)
+plt.title(args.title, fontsize=font_size_main_title, pad=20)
 plt.grid(True)
 plt.xscale('log')
 
@@ -190,6 +192,8 @@ if args.xticks:
 plt.yticks(fontsize=font_size_ticks)
 plt.xticks(fontsize=font_size_ticks)
 
+# Adjust the layout to increase space between figure and titles
+plt.subplots_adjust(top=0.9, bottom=0.15, left=0.15, right=0.95)
 # Define the base output file name using the provided title
 base_output_file_name = f'ProfilingResult-{args.title}'
 # Ensure the output file name is unique
