@@ -194,8 +194,10 @@ plt.xticks(fontsize=font_size_ticks)
 
 # Adjust the layout to increase space between figure and titles
 plt.subplots_adjust(top=0.9, bottom=0.15, left=0.15, right=0.95)
+
+name = args.title.replace(' ', '')
 # Define the base output file name using the provided title
-base_output_file_name = f'ProfilingResult-{args.title}'
+base_output_file_name = f'ProfilingResult-{name}'
 # Ensure the output file name is unique
 i = 1
 output_file_name = f'{base_output_file_name}.png'
