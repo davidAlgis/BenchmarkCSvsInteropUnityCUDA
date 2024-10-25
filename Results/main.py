@@ -7,6 +7,9 @@ import os
 GL_COLOR = (0.41, 0.71, 0.27)
 DX11_COLOR = (0.85, 0.31, 0.29)
 CUDA_COLOR = (0.12, 0.61, 0.73)
+font_size_main_title = 22
+font_size_title = 20
+font_size_ticks = 18
 
 
 def str2bool(v):
@@ -140,9 +143,9 @@ line_cuda = plt.errorbar(cuda_data['ArraySize'],
                          linestyle='-',
                          color=CUDA_COLOR,
                          markersize=3)
-plt.xlabel('Array Size')
-plt.ylabel('Average Execution Time (ms)')
-plt.title(args.title)
+plt.xlabel('Array Size', fontsize=font_size_title)
+plt.ylabel('Average Execution Time (ms)', fontsize=font_size_title)
+plt.title(args.title, fontsize=font_size_main_title)
 plt.grid(True)
 plt.xscale('log')
 
@@ -182,6 +185,10 @@ if args.xticks:
         set(gl_data['ArraySize']) | set(dx11_data['ArraySize'])
         | set(cuda_data['ArraySize']))
     plt.xticks(xticks, xticks)
+
+# Set y-ticks font size
+plt.yticks(fontsize=font_size_ticks)
+plt.xticks(fontsize=font_size_ticks)
 
 # Define the base output file name using the provided title
 base_output_file_name = f'ProfilingResult-{args.title}'
