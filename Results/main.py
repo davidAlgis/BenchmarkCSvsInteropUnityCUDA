@@ -5,7 +5,7 @@ import os
 
 # Define the new colors
 GL_COLOR = (0.41, 0.71, 0.27)
-DX11_COLOR = (0.85, 0.31, 0.29)
+DX11_COLOR = (1, 0.43, 0.34)
 CUDA_COLOR = (0.12, 0.61, 0.73)
 font_size_main_title = 22
 font_size_title = 20
@@ -122,7 +122,7 @@ line_gl = plt.errorbar(gl_data['ArraySize'],
                        label='Average Execution Time OpenGL',
                        marker='.',
                        capsize=3,
-                       linestyle='-',
+                       linestyle='dashed',
                        color=GL_COLOR,
                        markersize=3)
 line_dx11 = plt.errorbar(dx11_data['ArraySize'],
@@ -131,7 +131,7 @@ line_dx11 = plt.errorbar(dx11_data['ArraySize'],
                          label='Average Execution Time DirectX 11',
                          marker='.',
                          capsize=3,
-                         linestyle='-',
+                         linestyle='dotted',
                          color=DX11_COLOR,
                          markersize=3)
 line_cuda = plt.errorbar(cuda_data['ArraySize'],
@@ -150,6 +150,7 @@ plt.ylabel('Average Execution Time (ms)',
 plt.title(args.title, fontsize=font_size_main_title, pad=20)
 plt.grid(True)
 plt.xscale('log')
+# plt.yscale('log')
 
 if args.legend:
     plt.legend()
