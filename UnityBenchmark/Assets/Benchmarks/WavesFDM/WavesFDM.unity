@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.37311953, g: 0.38074014, b: 0.3587274, a: 1}
+  m_IndirectSpecularColor: {r: 0.37311953, g: 0.38074014, b: 0.35872743, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -289,6 +289,7 @@ MonoBehaviour:
   _numSamplesPerSize: 1000
   _profileTextCS: {fileID: 814532659}
   _profileTextCUDA: {fileID: 1379051417}
+  _profileTextCPU: {fileID: 8215172941300412226}
   _profileTextDifference: {fileID: 1199873797}
   _titleText: {fileID: 1367828938}
   _graphicsAPIText: {fileID: 8215172941300412225}
@@ -622,6 +623,30 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1949781979668939956, guid: fe2db2c3376b59b4785e42c323673a84, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1949781979668939956, guid: fe2db2c3376b59b4785e42c323673a84, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1949781979668939956, guid: fe2db2c3376b59b4785e42c323673a84, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1949781979668939956, guid: fe2db2c3376b59b4785e42c323673a84, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1949781979668939956, guid: fe2db2c3376b59b4785e42c323673a84, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1949781979668939956, guid: fe2db2c3376b59b4785e42c323673a84, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3153529528625940471, guid: fe2db2c3376b59b4785e42c323673a84, type: 3}
       propertyPath: m_fontSize
       value: 72
@@ -817,6 +842,17 @@ RectTransform:
 --- !u!114 &8215172941300412225 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 1806903692587406190, guid: fe2db2c3376b59b4785e42c323673a84, type: 3}
+  m_PrefabInstance: {fileID: 8215172941300412223}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &8215172941300412226 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 601345381700356203, guid: fe2db2c3376b59b4785e42c323673a84, type: 3}
   m_PrefabInstance: {fileID: 8215172941300412223}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
