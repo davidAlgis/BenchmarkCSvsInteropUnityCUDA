@@ -45,9 +45,10 @@ public class ReduceCS
     }
 
     /// <summary>
-    ///     Computes the sum of two arrays using the compute shader and measures the execution time.
+    ///     Computes the sum of one arrays using the compute shader and measures the execution time.
     /// </summary>
     /// <param name="resultBuffer">The compute buffer to store the result.</param>
+    /// <param name="arraySize">The size of the compute buffer</param>
     /// <param name="resultArray">The array to store the result after computation.</param>
     /// <returns>The execution time in milliseconds.</returns>
     public float ComputeSum(ComputeBuffer resultBuffer, int arraySize, ref float[] resultArray)
@@ -55,7 +56,7 @@ public class ReduceCS
         // Calculate the number of thread groups needed
         int threadGroupX = Mathf.CeilToInt((float)arraySize / _numThreadsX);
 
-        // we first call warmStep computation to make sur timing is correctly computed
+        // we first call warmStep computation to make sure timing is correctly computed
         int warmStep = 5;
         for (int _ = 0; _ < warmStep; _++)
         {
