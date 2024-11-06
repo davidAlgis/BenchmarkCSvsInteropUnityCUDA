@@ -21,6 +21,11 @@ public class ReduceCPU
         _arrayToSum = new float[arraySize];
     }
 
+    public void SetData(float[] array)
+    {
+        _arrayToSum = array;
+    }
+
     /// <summary>
     /// Computes the sum of all elements in the array, with performance timing.
     /// </summary>
