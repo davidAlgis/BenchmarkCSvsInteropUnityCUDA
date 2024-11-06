@@ -65,7 +65,8 @@ public class GetDataManager : BenchmarkManager
     /// <summary>
     ///     Updates the main recording process.
     /// </summary>
-    protected override void UpdateMainRecord(out float gpuExecutionTimeCS, out float gpuExecutionTimeCUDA)
+    protected override void UpdateMainRecord(out float gpuExecutionTimeCS, out float gpuExecutionTimeCUDA,
+        out float cpuExecutionTimeCPU)
     {
         int arraySize = _arraySizes[_currentArraySizeIndex];
         _titleText.text = $"Get Data - {arraySize} - Sample {_currentSampleCount}/{_numSamplesPerSize}";
@@ -78,6 +79,7 @@ public class GetDataManager : BenchmarkManager
         // Retrieve the data from the result buffer
         gpuExecutionTimeCS = UpdateGetDataCS();
         gpuExecutionTimeCUDA = _getDataCuda.UpdateGetData();
+        cpuExecutionTimeCPU = 0.0f;
     }
 
     private float UpdateGetDataCS()

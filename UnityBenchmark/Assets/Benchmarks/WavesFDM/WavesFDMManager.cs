@@ -3,7 +3,7 @@ using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 /// <summary>
-///     This class manages the resolution of the waves equation using Compute Shaders and CUDA,
+///     This class manages the resolution of the wave equation using Compute Shaders, CUDA, and CPU implementations,
 ///     handles initialization, updates, and the display of the results.
 /// </summary>
 public class WavesFDMManager : BenchmarkManager
@@ -19,24 +19,42 @@ public class WavesFDMManager : BenchmarkManager
     [SerializeField] private int _volumeDepth = 10;
     [SerializeField] private WavesFDMCUDA _wavesFDMCUDA;
     [SerializeField] private bool _displayResult;
+
+    // Variables for wave equation constants
     private float _a;
     private float _b;
-    private ComputeBuffer _bufferPixelCS;
 
+    // Compute buffers and arrays
+    private ComputeBuffer _bufferPixelCS;
+    private float[] _pixelArray;
+
+    // Flags and state variables
     private bool _hasBeenReleased = true;
 
+    // RenderTextures for Compute Shader implementation
     private RenderTexture _ht;
-
-    private Texture2DArray _htCUDA;
     private RenderTexture _htNew;
-    private Texture2DArray _htNewCUDA;
     private RenderTexture _htOld;
+
+    // Texture2DArray for CUDA implementation
+    private Texture2DArray _htCUDA;
+    private Texture2DArray _htNewCUDA;
     private Texture2DArray _htOldCUDA;
-    private float[] _pixelArray;
+
+    // Textures for displaying results
     private Texture2D _textureForDisplayCS;
     private Texture2D _textureForDisplayCUDA;
 
+    // Compute Shader implementation instance
     private WavesFDMCS _wavesFDMCS;
+
+    // CPU implementation instance
+    private WavesFDMCPU _wavesFDMCPU;
+
+    // CPU height arrays
+    private float[,,] _cpuHtNew;
+    private float[,,] _cpuHt;
+    private float[,,] _cpuHtOld;
 
     private void OnDestroy()
     {
@@ -47,17 +65,27 @@ public class WavesFDMManager : BenchmarkManager
     }
 
     /// <summary>
-    ///     Initializes the compute shader and CUDA handlers, and sets up the initial state.
+    ///     Initializes the compute shader, CUDA handlers, CPU simulation, and sets up the initial state.
     /// </summary>
     protected override void Initialize()
     {
         base.Initialize();
-        // define to respect the CFL c^2*dt^2/dx^2 <= 0.5
+
+        // Define constants to respect the CFL condition c^2 * dt^2 / dx^2 <= 0.5
         float c = Mathf.Sqrt(0.45f) * _dx / _dt;
         _a = c * c * _dt * _dt / (_dx * _dx);
         _b = 2 - 4 * _a;
+
+        // Initialize CUDA handler
         _wavesFDMCUDA.InitializeInteropHandler();
+
+        // Initialize Compute Shader implementation
         _wavesFDMCS = new WavesFDMCS();
+
+        // Initialize CPU implementation
+        _wavesFDMCPU = new WavesFDMCPU();
+
+        // Initialize resources
         ReInitialize();
     }
 
@@ -66,28 +94,50 @@ public class WavesFDMManager : BenchmarkManager
     /// </summary>
     protected override void UpdateBeforeRecord()
     {
-        _wavesFDMCS.Update(_ht.width, _ht.height, _ht.volumeDepth, _bufferPixelCS, ref _pixelArray);
-        _wavesFDMCUDA.ComputeWavesFDM();
+        // Perform warm-up computations to stabilize timings
+        int warmStep = 5;
+        for (int i = 0; i < warmStep; i++)
+        {
+            // Compute Shader implementation
+            _wavesFDMCS.Update(_ht.width, _ht.height, _ht.volumeDepth, _bufferPixelCS, ref _pixelArray);
+
+            // CUDA implementation
+            _wavesFDMCUDA.ComputeWavesFDM();
+
+            // CPU implementation
+            _wavesFDMCPU.Update();
+        }
 
         base.UpdateBeforeRecord();
     }
 
     /// <summary>
-    ///     Updates the execution time for both compute shader and CUDA, and refreshes the display.
+    ///     Updates the execution time for Compute Shader, CUDA, and CPU implementations, and refreshes the display.
     /// </summary>
     /// <param name="gpuExecutionTimeCS">Output parameter for the compute shader execution time.</param>
     /// <param name="gpuExecutionTimeCUDA">Output parameter for the CUDA execution time.</param>
-    protected override void UpdateMainRecord(out float gpuExecutionTimeCS, out float gpuExecutionTimeCUDA)
+    /// <param name="cpuExecutionTime">Output parameter for the CPU execution time.</param>
+    protected override void UpdateMainRecord(out float gpuExecutionTimeCS, out float gpuExecutionTimeCUDA,
+        out float cpuExecutionTime)
     {
         int arraySize = _arraySizes[_currentArraySizeIndex];
         _titleText.text = $"Waves FDM - {arraySize} - Sample {_currentSampleCount}/{_numSamplesPerSize}";
 
+        // Compute Shader implementation
         gpuExecutionTimeCS =
             _wavesFDMCS.Update(_ht.width, _ht.height, _ht.volumeDepth, _bufferPixelCS, ref _pixelArray);
+
+        // CUDA implementation
         gpuExecutionTimeCUDA = _wavesFDMCUDA.ComputeWavesFDM();
 
-        // Update the display texture
+        // CPU implementation
+        cpuExecutionTime = _wavesFDMCPU.Update();
+
+        // Optionally update the display texture
         UpdateDisplayTexture();
+
+        // Optionally compare results
+        // CompareResults();
     }
 
     /// <summary>
@@ -97,33 +147,44 @@ public class WavesFDMManager : BenchmarkManager
     {
         base.ReInitialize();
         int size = _arraySizes[_currentArraySizeIndex];
-        if (_hasBeenReleased == false)
+
+        if (!_hasBeenReleased)
         {
             ReleaseGraphics();
         }
 
-        // Allocate and initialize RenderTextures
+        // Initialize RenderTextures for Compute Shader implementation
         _htNew = CreateRenderTexture(size, size, _volumeDepth);
         _ht = CreateRenderTexture(size, size, _volumeDepth);
         _htOld = CreateRenderTexture(size, size, _volumeDepth);
 
+        // Initialize Texture2DArray for CUDA implementation
         _htNewCUDA = CreateTexture2DArray(size, size, _volumeDepth);
         _htCUDA = CreateTexture2DArray(size, size, _volumeDepth);
         _htOldCUDA = CreateTexture2DArray(size, size, _volumeDepth);
+
+        // Initialize Compute Buffer
         _bufferPixelCS = new ComputeBuffer(1, sizeof(float));
         _pixelArray = new[] { 0.0f };
 
+        // Initialize CPU height arrays
+        _cpuHtNew = new float[_volumeDepth, size, size];
+        _cpuHt = new float[_volumeDepth, size, size];
+        _cpuHtOld = new float[_volumeDepth, size, size];
+
         // Initialize textures with some values if needed
         InitializeTextures(_ht, _htNew, _htOld);
+        InitializeCPUHeights(_cpuHt, _cpuHtNew, _cpuHtOld);
 
-        // Copy RenderTextures to Texture2DArrays
+        // Copy RenderTextures to Texture2DArray for CUDA implementation
         CopyRenderTextureToTexture2DArray(_htNew, _htNewCUDA);
         CopyRenderTextureToTexture2DArray(_ht, _htCUDA);
         CopyRenderTextureToTexture2DArray(_htOld, _htOldCUDA);
 
-        // Initialize the display texture
+        // Initialize the display textures
         _textureForDisplayCS = new Texture2D(size, size, TextureFormat.RFloat, false);
         _textureForDisplayCUDA = new Texture2D(size, size, TextureFormat.RFloat, false);
+
         if (_displayResult)
         {
             _rawImageCS.texture = _textureForDisplayCS;
@@ -135,29 +196,33 @@ public class WavesFDMManager : BenchmarkManager
             _rawImageCUDA.gameObject.SetActive(false);
         }
 
-        _wavesFDMCS.Init(ref _htNew, ref _ht,
-            ref _htOld, _computeShaderFDMWaves, _computeShaderSwitchTex, _a, _b, _arraySizes[_currentArraySizeIndex],
+        // Initialize Compute Shader implementation
+        _wavesFDMCS.Init(ref _htNew, ref _ht, ref _htOld, _computeShaderFDMWaves, _computeShaderSwitchTex, _a, _b, size,
             _volumeDepth, _bufferPixelCS);
-        _wavesFDMCUDA.InitializeActionsWavesFDM(_htNewCUDA, _htCUDA, _htOldCUDA,
-            size, _volumeDepth, _a, _b);
+
+        // Initialize CUDA implementation
+        _wavesFDMCUDA.InitializeActionsWavesFDM(_htNewCUDA, _htCUDA, _htOldCUDA, size, _volumeDepth, _a, _b);
+
+        // Initialize CPU implementation
+        _wavesFDMCPU.Init(_a, _b, size, _volumeDepth);
+        _wavesFDMCPU.SetInitialHeights(_cpuHt, _cpuHtOld);
+
+        // Perform initial updates
         _wavesFDMCS.Update(_ht.width, _ht.height, _ht.volumeDepth, _bufferPixelCS, ref _pixelArray);
         _wavesFDMCUDA.ComputeWavesFDM();
+        _wavesFDMCPU.Update();
 
-        // instead of initializing the texture of CUDA manually as we did with the texture above
-        // , we just copy the value of the render texture use for compute shader in texture2DArray for CUDA. With that, we are sure that they are sync. 
+        // Ensure CUDA textures are synchronized with Compute Shader textures
         CopyRenderTextureToTexture2DArray(_htNew, _htNewCUDA);
         CopyRenderTextureToTexture2DArray(_ht, _htCUDA);
         CopyRenderTextureToTexture2DArray(_htOld, _htOldCUDA);
+
         _hasBeenReleased = false;
     }
 
     /// <summary>
     ///     Creates a RenderTexture with the specified dimensions and volume depth.
     /// </summary>
-    /// <param name="width">The width of the texture.</param>
-    /// <param name="height">The height of the texture.</param>
-    /// <param name="depth">The volume depth of the texture.</param>
-    /// <returns>A newly created RenderTexture.</returns>
     private RenderTexture CreateRenderTexture(int width, int height, int depth)
     {
         RenderTexture texture = new(width, height, 0, RenderTextureFormat.RFloat)
@@ -173,10 +238,6 @@ public class WavesFDMManager : BenchmarkManager
     /// <summary>
     ///     Creates a Texture2DArray with the specified dimensions and volume depth.
     /// </summary>
-    /// <param name="width">The width of the texture array.</param>
-    /// <param name="height">The height of the texture array.</param>
-    /// <param name="depth">The volume depth of the texture array.</param>
-    /// <returns>A newly created Texture2DArray.</returns>
     private Texture2DArray CreateTexture2DArray(int width, int height, int depth)
     {
         Texture2DArray textureArray = new(width, height, depth, TextureFormat.RFloat, false, true);
@@ -187,7 +248,6 @@ public class WavesFDMManager : BenchmarkManager
     /// <summary>
     ///     Initializes the specified RenderTextures with default values and a central circle.
     /// </summary>
-    /// <param name="textures">The RenderTextures to initialize.</param>
     private void InitializeTextures(params RenderTexture[] textures)
     {
         foreach (RenderTexture texture in textures)
@@ -227,6 +287,48 @@ public class WavesFDMManager : BenchmarkManager
                 tex.Apply();
 
                 Graphics.CopyTexture(tex, 0, 0, texture, layer, 0);
+
+                // Clean up
+                Destroy(tex);
+            }
+        }
+    }
+
+    /// <summary>
+    ///     Initializes the CPU height arrays with default values and a central circle.
+    /// </summary>
+    private void InitializeCPUHeights(float[,,] ht, float[,,] htNew, float[,,] htOld)
+    {
+        int size = _arraySizes[_currentArraySizeIndex];
+        for (int k = 0; k < _volumeDepth; k++)
+        {
+            // Initialize all values to 0
+            for (int i = 0; i < size; i++)
+            {
+                for (int j = 0; j < size; j++)
+                {
+                    ht[k, i, j] = 0f;
+                    htNew[k, i, j] = 0f;
+                    htOld[k, i, j] = 0f;
+                }
+            }
+
+            // Set a central circle to 1
+            int centerX = size / 2;
+            int centerY = size / 2;
+            int radius = size / 10;
+
+            for (int i = 0; i < size; i++)
+            {
+                for (int j = 0; j < size; j++)
+                {
+                    int dx = i - centerX;
+                    int dy = j - centerY;
+                    if (dx * dx + dy * dy <= radius * radius)
+                    {
+                        ht[k, i, j] = 1f;
+                    }
+                }
             }
         }
     }
@@ -234,8 +336,6 @@ public class WavesFDMManager : BenchmarkManager
     /// <summary>
     ///     Copies the contents of a RenderTexture to a Texture2DArray.
     /// </summary>
-    /// <param name="renderTexture">The source RenderTexture.</param>
-    /// <param name="textureArray">The destination Texture2DArray.</param>
     private void CopyRenderTextureToTexture2DArray(RenderTexture renderTexture, Texture2DArray textureArray)
     {
         for (int layer = 0; layer < textureArray.depth; layer++)
@@ -251,16 +351,16 @@ public class WavesFDMManager : BenchmarkManager
     {
         if (_displayResult)
         {
-            // Copy the first texture of the array (_ht) to _textureForDisplayCS
+            // Copy the first layer of the RenderTexture (_ht) to _textureForDisplayCS
             Graphics.CopyTexture(_ht, 0, 0, _textureForDisplayCS, 0, 0);
 
-            // Copy the first texture of the array (_htCUDA) to _textureForDisplayCUDA
+            // Copy the first layer of the Texture2DArray (_htCUDA) to _textureForDisplayCUDA
             Graphics.CopyTexture(_htCUDA, 0, 0, _textureForDisplayCUDA, 0, 0);
         }
     }
 
     /// <summary>
-    ///     Releases the render textures.
+    ///     Releases the compute buffers and textures.
     /// </summary>
     private void ReleaseGraphics()
     {
@@ -284,6 +384,69 @@ public class WavesFDMManager : BenchmarkManager
             _htOld = null;
         }
 
-        _bufferPixelCS.Release();
+        _bufferPixelCS?.Release();
+        _bufferPixelCS = null;
+    }
+
+    /// <summary>
+    ///     Compares the results of CPU and GPU computations to verify correctness.
+    /// </summary>
+    private void CompareResults()
+    {
+        // Retrieve the current height from CPU simulation
+        float[,,] cpuCurrentHt = _wavesFDMCPU.GetCurrentHeight();
+
+        // Retrieve the current height from GPU simulation (Compute Shader)
+        RenderTexture.active = _ht;
+        Texture2D tex = new(_ht.width, _ht.height, TextureFormat.RFloat, false);
+        tex.ReadPixels(new Rect(0, 0, _ht.width, _ht.height), 0, 0);
+        tex.Apply();
+
+        bool isEqual = true;
+        float epsilon = 0.0001f; // Tolerance for floating-point comparison
+        int size = _ht.width;
+
+        for (int k = 0; k < _volumeDepth; k++)
+        {
+            for (int i = 0; i < size; i++)
+            {
+                for (int j = 0; j < size; j++)
+                {
+                    float cpuValue = cpuCurrentHt[k, i, j];
+                    float gpuValue = tex.GetPixel(j, i).r; // Note: Texture2D uses (x, y)
+
+                    if (Mathf.Abs(cpuValue - gpuValue) > epsilon)
+                    {
+                        isEqual = false;
+                        Debug.LogError(
+                            $"Mismatch at layer {k}, position ({i}, {j}): CPU = {cpuValue}, GPU = {gpuValue}");
+                        break;
+                    }
+                }
+
+                if (!isEqual)
+                {
+                    break;
+                }
+            }
+
+            if (!isEqual)
+            {
+                break;
+            }
+        }
+
+        if (isEqual)
+        {
+            Debug.Log("CPU and GPU results match.");
+        }
+        else
+        {
+            Debug.LogError("CPU and GPU results do not match.");
+        }
+
+        // Clean up
+        RenderTexture.active = null;
+        Destroy(tex);
     }
 }

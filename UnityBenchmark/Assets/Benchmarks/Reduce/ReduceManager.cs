@@ -29,6 +29,9 @@ public class ReduceManager : BenchmarkManager
     private ComputeBuffer _resultBufferCS;
     private ComputeBuffer _spinlockBuffer;
 
+    // CPU reduction instance
+    private ReduceCPU _reduceCPU;
+
     /// <summary>
     ///     Initializes the components and starts the profiling process.
     /// </summary>
@@ -61,6 +64,12 @@ public class ReduceManager : BenchmarkManager
         _reduceCS.Init(_computeShader, _arraySizes[_currentArraySizeIndex], _bufferCS, _resultBufferCS,
             _spinlockBuffer);
 
+        // Initialize the CPU reduction
+        _reduceCPU = new ReduceCPU();
+        _reduceCPU.Init(_arraySizes[_currentArraySizeIndex]);
+        // Copy the generated array to the CPU reduction instance for fair comparison
+        _reduceCPU.SetData(_array);
+
         // Execute CUDA get data once to get an initial execution time
         _reduceCuda.UpdateReduce();
     }
@@ -80,7 +89,8 @@ public class ReduceManager : BenchmarkManager
     /// <summary>
     ///     Updates the main recording process.
     /// </summary>
-    protected override void UpdateMainRecord(out float gpuExecutionTimeCS, out float gpuExecutionTimeCUDA)
+    protected override void UpdateMainRecord(out float gpuExecutionTimeCS, out float gpuExecutionTimeCUDA,
+        out float cpuExecutionTime)
     {
         int arraySize = _arraySizes[_currentArraySizeIndex];
         _titleText.text = $"Reduce - {arraySize} - Sample {_currentSampleCount}/{_numSamplesPerSize}";
@@ -92,16 +102,20 @@ public class ReduceManager : BenchmarkManager
 
         // _spinlockBuffer.SetData(new[] { 0 });
         _resultBufferCS.SetData(new[] { 0 });
+
         // Perform reduction using compute shader
         gpuExecutionTimeCS = _reduceCS.ComputeSum(_resultBufferCS, arraySize, ref _resultArray);
 
         // Perform reduction using CUDA
         gpuExecutionTimeCUDA = _reduceCuda.UpdateReduce();
 
+        // Perform reduction on the CPU
+        cpuExecutionTime = _reduceCPU.ComputeSum(out float cpuSum);
+
         // Check result each frame if enabled
         if (_checkResultEachFrame)
         {
-            CheckResult();
+            CheckResult(cpuSum);
         }
     }
 
@@ -118,6 +132,10 @@ public class ReduceManager : BenchmarkManager
         // Re-initialize the reduce compute shader
         _reduceCS.Init(_computeShader, _arraySizes[_currentArraySizeIndex], _bufferCS, _resultBufferCS,
             _spinlockBuffer);
+
+        // Re-initialize the CPU reduction
+        _reduceCPU.Init(_arraySizes[_currentArraySizeIndex]);
+
         _reduceCuda.UpdateReduce();
     }
 
@@ -163,19 +181,12 @@ public class ReduceManager : BenchmarkManager
     /// <summary>
     ///     Checks if the result of the reduction is correct by comparing it to a CPU sum.
     /// </summary>
-    private void CheckResult()
+    private void CheckResult(float cpuSum)
     {
-        // Perform CPU sum
-        float cpuSum = 0.0f;
-        foreach (float x in _array)
-        {
-            cpuSum += x;
-        }
-
-        // Get the GPU result
+        // Get the GPU result from the last compute shader run
         float gpuSum = _resultArray[0];
 
-        // Compare results
+        // Compare CPU and GPU results
         if (Mathf.Approximately(cpuSum, gpuSum))
         {
             Debug.Log("GPU result matches CPU result.");
