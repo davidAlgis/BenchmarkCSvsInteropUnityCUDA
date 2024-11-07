@@ -60,7 +60,7 @@ def parse_arguments():
                         '--title',
                         type=str,
                         default='Execution and Speedup Metrics',
-                        help='Title of the graphs')
+                        help='Base title for the graphs')
     parser.add_argument('-s',
                         '--show',
                         type=str2bool,
@@ -71,16 +71,30 @@ def parse_arguments():
                         type=int,
                         default=300,
                         help='Resolution of the output images in dpi')
-    parser.add_argument('-x',
-                        '--xlim',
-                        type=str,
-                        default=None,
-                        help='X-axis limits in the format "min,max"')
-    parser.add_argument('-y',
-                        '--ylim',
-                        type=str,
-                        default=None,
-                        help='Y-axis limits in the format "min,max"')
+    parser.add_argument(
+        '-xa',
+        '--xlimAverage',
+        type=str,
+        default=None,
+        help='X-axis limits for average plot in the format "min,max"')
+    parser.add_argument(
+        '-ya',
+        '--ylimAverage',
+        type=str,
+        default=None,
+        help='Y-axis limits for average plot in the format "min,max"')
+    parser.add_argument(
+        '-xs',
+        '--xlimSpeedup',
+        type=str,
+        default=None,
+        help='X-axis limits for speedup plot in the format "min,max"')
+    parser.add_argument(
+        '-ys',
+        '--ylimSpeedup',
+        type=str,
+        default=None,
+        help='Y-axis limits for speedup plot in the format "min,max"')
     parser.add_argument(
         '-xt',
         '--xticks',
@@ -171,18 +185,30 @@ def plot_metrics(args,
                  title_suffix,
                  ylabel,
                  output_filename,
-                 is_speedup=False):
+                 is_speedup=False,
+                 xlim=None,
+                 ylim=None):
     """Plot metrics (average times or speedups)."""
     plt.figure(figsize=(12, 8), dpi=args.resolution)
     lines = []
     labels = []
     max_values = []
+
     for key, value in data_dict.items():
         if not value['plot']:
-            print(
-                f"Skipping {value['label']} plot: All average execution times are zero."
-            )
-            continue
+            continue  # Skip if the metric should not be plotted
+
+        # Ensure that 'y' is not empty before appending the maximum value
+        if isinstance(value['y'], pd.Series):
+            if not value['y'].empty:
+                if (key != 'cpu'):
+                    max_values.append(value['y'].max())
+        elif isinstance(value['y'], list):
+            if value['y']:  # Check if the list is non-empty
+                if (key != 'cpu'):
+                    max_values.append(max(value['y']))
+
+        # Plot the metric
         line = plt.errorbar(value['x'],
                             value['y'],
                             yerr=value['yerr'],
@@ -194,10 +220,11 @@ def plot_metrics(args,
                             markersize=5)
         lines.append(line)
         labels.append(value['label'])
-        max_values.append(max(value['y']))
+
     if not lines:
         print(f"Error: No valid data to plot for {title_suffix}.")
         sys.exit(1)
+
     # Set labels and title
     plt.xlabel('Array Size', fontsize=font_size_title, labelpad=10)
     plt.ylabel(ylabel, fontsize=font_size_title, labelpad=10)
@@ -206,42 +233,24 @@ def plot_metrics(args,
               pad=20)
     plt.grid(True, which="both", ls="--", linewidth=0.5)
     plt.xscale('log')
+
     # Handle legend
     if args.legend:
         plt.legend(fontsize=font_size_ticks)
-    # Set x-axis and y-axis limits
-    set_axis_limits(args, max_values, is_speedup)
-    # Set x-ticks
-    if args.xticks:
-        xticks = sorted(set().union(*(value['x']
-                                      for value in data_dict.values()
-                                      if value['plot'])))
-        plt.xticks(xticks, xticks)
-    # Set font sizes
-    plt.yticks(fontsize=font_size_ticks)
-    plt.xticks(fontsize=font_size_ticks)
-    plt.subplots_adjust(top=0.9, bottom=0.15, left=0.15, right=0.95)
-    # Save plot
-    save_plot(args, output_filename)
-    if args.show:
-        plt.show()
-    plt.close()
 
-
-def set_axis_limits(args, max_values, is_speedup):
-    """Set axis limits based on data or user input."""
-    if args.xlim:
+    # Set axis limits
+    if xlim:
         try:
-            xmin, xmax = map(float, args.xlim.split(','))
+            xmin, xmax = map(float, xlim.split(','))
             plt.xlim(xmin, xmax)
         except ValueError:
-            print(f"Error: Invalid x-axis limits format '{args.xlim}'")
-    if args.ylim:
+            print(f"Error: Invalid x-axis limits format '{xlim}'")
+    if ylim:
         try:
-            ymin, ymax = map(float, args.ylim.split(','))
+            ymin, ymax = map(float, ylim.split(','))
             plt.ylim(ymin, ymax)
         except ValueError:
-            print(f"Error: Invalid y-axis limits format '{args.ylim}'")
+            print(f"Error: Invalid y-axis limits format '{ylim}'")
     else:
         if max_values:
             overall_max = max(max_values)
@@ -249,7 +258,27 @@ def set_axis_limits(args, max_values, is_speedup):
             plt.ylim(0, overall_max + padding)
         else:
             plt.ylim(0, 1)
-            print("Y-axis limits set to (0, 1) as a fallback.")
+            print(
+                f"Y-axis limits set to (0, 1) as a fallback for '{title_suffix}'."
+            )
+
+    # Set x-ticks if specified
+    if args.xticks:
+        xticks = sorted(set().union(*(value['x']
+                                      for value in data_dict.values()
+                                      if value['plot'])))
+        plt.xticks(xticks, xticks)
+
+    # Set font sizes
+    plt.yticks(fontsize=font_size_ticks)
+    plt.xticks(fontsize=font_size_ticks)
+    plt.subplots_adjust(top=0.9, bottom=0.15, left=0.15, right=0.95)
+
+    # Save plot
+    save_plot(args, output_filename)
+    if args.show:
+        plt.show()
+    plt.close()
 
 
 def save_plot(args, base_filename):
@@ -338,8 +367,14 @@ def main():
     # Plot average execution times
     name = args.title.replace(' ', '')
     execution_plot_filename = f'ProfilingResult-{name}'
-    plot_metrics(args, avg_data_dict, 'Average Execution Time',
-                 'Average Execution Time (ms)', execution_plot_filename)
+    plot_metrics(args,
+                 avg_data_dict,
+                 'Average Execution Time',
+                 'Average Execution Time (ms)',
+                 execution_plot_filename,
+                 is_speedup=False,
+                 xlim=args.xlimAverage,
+                 ylim=args.ylimAverage)
     # Prepare data for speedup
     speedup_data_dict = {}
     if plot_gl:
@@ -347,46 +382,65 @@ def main():
             cuda_data, gl_data, 'AverageExecutionTimeCUDA',
             'StandardDeviationCUDA', 'AverageExecutionTimeCS',
             'StandardDeviationCS')
-        speedup_data_dict['gl'] = {
-            'plot': True if speedup_gl else False,
-            'x': array_sizes_gl,
-            'y': speedup_gl,
-            'yerr': speedup_gl_err,
-            'label': 'Speedup OpenGL CS',
-            'marker': 'o',
-            'linestyle': 'dashed',
-            'color': GL_COLOR
-        }
+        if speedup_gl:
+            speedup_data_dict['gl'] = {
+                'plot': True,
+                'x': array_sizes_gl,
+                'y': speedup_gl,
+                'yerr': speedup_gl_err,
+                'label': 'Speedup OpenGL CS',
+                'marker': 'o',
+                'linestyle': 'dashed',
+                'color': GL_COLOR
+            }
     if plot_dx11:
         array_sizes_dx11, speedup_dx11, speedup_dx11_err = calculate_speedup(
             cuda_data, dx11_data, 'AverageExecutionTimeCUDA',
             'StandardDeviationCUDA', 'AverageExecutionTimeCS',
             'StandardDeviationCS')
-        speedup_data_dict['dx11'] = {
-            'plot': True if speedup_dx11 else False,
-            'x': array_sizes_dx11,
-            'y': speedup_dx11,
-            'yerr': speedup_dx11_err,
-            'label': 'Speedup DirectX 11 CS',
-            'marker': 's',
-            'linestyle': 'dashdot',
-            'color': DX11_COLOR
-        }
+        if speedup_dx11:
+            speedup_data_dict['dx11'] = {
+                'plot': True,
+                'x': array_sizes_dx11,
+                'y': speedup_dx11,
+                'yerr': speedup_dx11_err,
+                'label': 'Speedup DirectX 11 CS',
+                'marker': 's',
+                'linestyle': 'dashdot',
+                'color': DX11_COLOR
+            }
     if plot_cpu:
         array_sizes_cpu, speedup_cpu, speedup_cpu_err = calculate_speedup(
             cuda_data, cpu_data, 'AverageExecutionTimeCUDA',
             'StandardDeviationCUDA', 'AverageExecutionTimeCPU',
             'StandardDeviationCPU')
-        speedup_data_dict['cpu'] = {
-            'plot': True if speedup_cpu else False,
-            'x': array_sizes_cpu,
-            'y': speedup_cpu,
-            'yerr': speedup_cpu_err,
-            'label': 'Speedup CPU',
-            'marker': 'D',
-            'linestyle': ':',
-            'color': CPU_COLOR
-        }
+        if speedup_cpu:
+            speedup_data_dict['cpu'] = {
+                'plot': True,
+                'x': array_sizes_cpu,
+                'y': speedup_cpu,
+                'yerr': speedup_cpu_err,
+                'label': 'Speedup CPU',
+                'marker': 'D',
+                'linestyle': ':',
+                'color': CPU_COLOR
+            }
+    if plot_cuda:
+        array_sizes_cuda, speedup_cuda, speedup_cuda_err = calculate_speedup(
+            cuda_data, cuda_data, 'AverageExecutionTimeCUDA',
+            'StandardDeviationCUDA', 'AverageExecutionTimeCUDA',
+            'StandardDeviationCUDA')
+        if speedup_cpu:
+            speedup_data_dict['cuda'] = {
+                'plot': True,
+                'x': array_sizes_cuda,
+                'y': speedup_cuda,
+                'yerr': speedup_cuda_err,
+                'label': 'Speedup CUDA',
+                'marker': 'D',
+                'linestyle': ':',
+                'color': CUDA_COLOR
+            }
     # Plot speedup
     speedup_plot_filename = f'ProfilingSpeedup-{name}'
     plot_metrics(args,
@@ -394,7 +448,9 @@ def main():
                  'Speedup Compared to CUDA',
                  'Speedup Compared to CUDA',
                  speedup_plot_filename,
-                 is_speedup=True)
+                 is_speedup=True,
+                 xlim=args.xlimSpeedup,
+                 ylim=args.ylimSpeedup)
 
 
 if __name__ == '__main__':
