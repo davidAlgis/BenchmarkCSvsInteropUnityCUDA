@@ -43,11 +43,11 @@ public class BenchmarkManager : MonoBehaviour
 
     // Time to wait before recording profiling data
     [SerializeField] private float _waitTimeBeforeClocking = 5f;
+    private readonly List<float> _executionTimesCPU = new();
 
     // Lists to store execution times and profiling results
     private readonly List<float> _executionTimesCS = new();
     private readonly List<float> _executionTimesCUDA = new();
-    private readonly List<float> _executionTimesCPU = new();
 
     private readonly List<ProfilingDataSum> _profilingResults = new();
 
@@ -56,22 +56,22 @@ public class BenchmarkManager : MonoBehaviour
 
     protected int _currentSampleCount;
     private int _executionCount;
+    private float _maxExecutionTimeCPU = float.MinValue;
 
     private float _maxExecutionTimeCS = float.MinValue;
     private float _maxExecutionTimeCUDA = float.MinValue;
-    private float _maxExecutionTimeCPU = float.MinValue;
+    private float _minExecutionTimeCPU = float.MaxValue;
 
     // Minimum and maximum execution times
     private float _minExecutionTimeCS = float.MaxValue;
     private float _minExecutionTimeCUDA = float.MaxValue;
-    private float _minExecutionTimeCPU = float.MaxValue;
 
     private bool _recordingStarted;
 
     private float _startTime;
+    private float _totalExecutionTimeCPU;
     private float _totalExecutionTimeCS;
     private float _totalExecutionTimeCUDA;
-    private float _totalExecutionTimeCPU;
 
     /// <summary>
     ///     Initializes the components and starts the profiling process.

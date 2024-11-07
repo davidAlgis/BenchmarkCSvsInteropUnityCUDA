@@ -96,7 +96,8 @@ public class VectorAddManager : BenchmarkManager
     /// <summary>
     ///     Updates the main recording process.
     /// </summary>
-    protected override void UpdateMainRecord(out float gpuExecutionTimeCS, out float gpuExecutionTimeCUDA, out float cpuExecutionTime)
+    protected override void UpdateMainRecord(out float gpuExecutionTimeCS, out float gpuExecutionTimeCUDA,
+        out float cpuExecutionTime)
     {
         int arraySize = _arraySizes[_currentArraySizeIndex];
         _titleText.text = $"Vector Add - {arraySize} - Sample {_currentSampleCount}/{_numSamplesPerSize}";

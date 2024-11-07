@@ -26,35 +26,35 @@ public class WavesFDMManager : BenchmarkManager
 
     // Compute buffers and arrays
     private ComputeBuffer _bufferPixelCS;
-    private float[] _pixelArray;
+    private float[,,] _cpuHt;
+
+    // CPU height arrays
+    private float[,,] _cpuHtNew;
+    private float[,,] _cpuHtOld;
 
     // Flags and state variables
     private bool _hasBeenReleased = true;
 
     // RenderTextures for Compute Shader implementation
     private RenderTexture _ht;
-    private RenderTexture _htNew;
-    private RenderTexture _htOld;
 
     // Texture2DArray for CUDA implementation
     private Texture2DArray _htCUDA;
+    private RenderTexture _htNew;
     private Texture2DArray _htNewCUDA;
+    private RenderTexture _htOld;
     private Texture2DArray _htOldCUDA;
+    private float[] _pixelArray;
 
     // Textures for displaying results
     private Texture2D _textureForDisplayCS;
     private Texture2D _textureForDisplayCUDA;
 
-    // Compute Shader implementation instance
-    private WavesFDMCS _wavesFDMCS;
-
     // CPU implementation instance
     private WavesFDMCPU _wavesFDMCPU;
 
-    // CPU height arrays
-    private float[,,] _cpuHtNew;
-    private float[,,] _cpuHt;
-    private float[,,] _cpuHtOld;
+    // Compute Shader implementation instance
+    private WavesFDMCS _wavesFDMCS;
 
     private void OnDestroy()
     {

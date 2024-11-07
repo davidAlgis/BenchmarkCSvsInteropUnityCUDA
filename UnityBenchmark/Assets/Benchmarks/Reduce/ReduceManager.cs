@@ -23,14 +23,14 @@ public class ReduceManager : BenchmarkManager
     private bool _hasBeenRelease;
     private bool _randomizedEachFrame;
 
+    // CPU reduction instance
+    private ReduceCPU _reduceCPU;
+
     // Compute shader for reduction
     private ReduceCS _reduceCS;
     private float[] _resultArray;
     private ComputeBuffer _resultBufferCS;
     private ComputeBuffer _spinlockBuffer;
-
-    // CPU reduction instance
-    private ReduceCPU _reduceCPU;
 
     /// <summary>
     ///     Initializes the components and starts the profiling process.
