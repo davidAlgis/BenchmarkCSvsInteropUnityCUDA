@@ -50,12 +50,14 @@ public class BenchmarkManager : MonoBehaviour
     private readonly List<float> _executionTimesCUDA = new();
 
     private readonly List<ProfilingDataSum> _profilingResults = new();
+    private float _averageTimeCPU;
 
     // Indices and counters for tracking progress
     protected int _currentArraySizeIndex;
 
     protected int _currentSampleCount;
     private int _executionCount;
+    protected bool _isCPUTimeTooLarge;
     private float _maxExecutionTimeCPU = float.MinValue;
 
     private float _maxExecutionTimeCS = float.MinValue;
@@ -101,6 +103,13 @@ public class BenchmarkManager : MonoBehaviour
             UpdateMainRecord(out float gpuExecutionTimeCS, out float gpuExecutionTimeCUDA, out float cpuExecutionTime);
 
             UpdateProfilingInfo(gpuExecutionTimeCS, gpuExecutionTimeCUDA, cpuExecutionTime);
+            // we check if cpu time is too large
+            if (_isCPUTimeTooLarge == false)
+            {
+                _isCPUTimeTooLarge = _averageTimeCPU > 16.0f &&
+                                     _averageTimeCPU > 10.0f * Mathf.Max(gpuExecutionTimeCS, gpuExecutionTimeCUDA);
+            }
+
             // Update the UI
             _currentSampleCount++;
         }
@@ -202,7 +211,8 @@ public class BenchmarkManager : MonoBehaviour
     }
 
     /// <summary>
-    ///     Records profiling data for the main computational tasks and calls the main computational task for compute shader, CUDA, and CPU.
+    ///     Records profiling data for the main computational tasks and calls the main computational task for compute shader,
+    ///     CUDA, and CPU.
     /// </summary>
     /// <param name="gpuExecutionTimeCS">The execution time for the compute shader.</param>
     /// <param name="gpuExecutionTimeCUDA">The execution time for the CUDA implementation.</param>
@@ -359,9 +369,9 @@ public class BenchmarkManager : MonoBehaviour
         // Calculate average execution times
         float averageTimeCS = _totalExecutionTimeCS / _executionCount;
         float averageTimeCUDA = _totalExecutionTimeCUDA / _executionCount;
-        float averageTimeCPU = _totalExecutionTimeCPU / _executionCount; // Calculate average CPU time
+        _averageTimeCPU = _totalExecutionTimeCPU / _executionCount; // Calculate average CPU time
         float differenceCS_CUDA = averageTimeCS - averageTimeCUDA;
-        float differenceCS_CPU = averageTimeCS - averageTimeCPU;
+        float differenceCS_CPU = averageTimeCS - _averageTimeCPU;
 
         // Update UI Text for Compute Shader
         if (_profileTextCS != null)
@@ -378,7 +388,14 @@ public class BenchmarkManager : MonoBehaviour
         // Update UI Text for CPU
         if (_profileTextCPU != null)
         {
-            _profileTextCPU.text = $"Average Time CPU: {averageTimeCPU:F3} ms";
+            if (_isCPUTimeTooLarge)
+            {
+                _profileTextCPU.text = "Average Time CPU: too large (disabled computation)";
+            }
+            else
+            {
+                _profileTextCPU.text = $"Average Time CPU: {_averageTimeCPU:F3} ms";
+            }
         }
 
         // Update UI Text for Differences
@@ -455,6 +472,16 @@ public class BenchmarkManager : MonoBehaviour
                   $", Standard Deviation (CUDA): {standardDeviationCUDA:F3} ms" +
                   $", Variance (CUDA): {varianceCUDA:F3} ms^2");
 
+        if (_isCPUTimeTooLarge)
+        {
+            // arbitrary defined the average  at 10 *Mathf.Max(overallAverageCS, overallAverageCUDA). We stop calculation but it's largely above.
+            overallAverageCPU = 10.0f * Mathf.Max(overallAverageCS, overallAverageCUDA);
+            _minExecutionTimeCPU = 0.0f;
+            _maxExecutionTimeCPU = 0.0f;
+            standardDeviationCPU = 0.0f;
+            varianceCPU = 0.0f;
+        }
+
         // Log the results for CPU
         Debug.Log($"CPU Profiling Summary for Array Size {_arraySizes[_currentArraySizeIndex]}:" +
                   $" Samples: {_executionCount}" +
@@ -494,7 +521,7 @@ public class BenchmarkManager : MonoBehaviour
     {
         string sceneName = SceneManager.GetActiveScene().name;
         string graphicsAPI = SystemInfo.graphicsDeviceType.ToString();
-        string fileName = $"ProfilingResults - {sceneName} - {_numSamplesPerSize} - {graphicsAPI}.csv";
+        string fileName = $"ProfilingResults-{sceneName}-{_numSamplesPerSize}-{graphicsAPI}.csv";
         string filePath = Path.Combine(Application.dataPath, fileName);
 
         using (StreamWriter writer = new(filePath))

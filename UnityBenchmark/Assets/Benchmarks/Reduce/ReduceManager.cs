@@ -108,9 +108,13 @@ public class ReduceManager : BenchmarkManager
 
         // Perform reduction using CUDA
         gpuExecutionTimeCUDA = _reduceCuda.UpdateReduce();
+        float cpuSum = 0.0f;
 
-        // Perform reduction on the CPU
-        cpuExecutionTime = _reduceCPU.ComputeSum(out float cpuSum);
+        cpuExecutionTime = _isCPUTimeTooLarge
+            ? 0.0f
+            :
+            // Perform reduction on the CPU
+            cpuExecutionTime = _reduceCPU.ComputeSum(out cpuSum);
 
         // Check result each frame if enabled
         if (_checkResultEachFrame)

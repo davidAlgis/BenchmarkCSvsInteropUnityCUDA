@@ -129,9 +129,11 @@ public class WavesFDMManager : BenchmarkManager
 
         // CUDA implementation
         gpuExecutionTimeCUDA = _wavesFDMCUDA.ComputeWavesFDM();
-
-        // CPU implementation
-        cpuExecutionTime = _wavesFDMCPU.Update();
+        cpuExecutionTime = _isCPUTimeTooLarge
+            ? 0.0f
+            :
+            // CPU implementation
+            cpuExecutionTime = _wavesFDMCPU.Update();
 
         // Optionally update the display texture
         UpdateDisplayTexture();

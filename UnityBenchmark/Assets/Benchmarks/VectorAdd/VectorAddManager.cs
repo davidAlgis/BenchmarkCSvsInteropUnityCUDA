@@ -111,12 +111,17 @@ public class VectorAddManager : BenchmarkManager
             _vectorAddCompute.ComputeSum(_resultBufferCS, arraySize, ref _resultArrayCS, _nbrElementToRetrieve);
         gpuExecutionTimeCUDA = _vectorAddCuda.ComputeSum();
         // Perform reduction on the CPU
-        cpuExecutionTime = _vectorAddCPU.ComputeSum(out float[] cpuResult);
+        float[] cpuResult = null;
 
-        if (_compareCPU)
+        cpuExecutionTime = _isCPUTimeTooLarge
+            ? 0.0f
+            :
+            // Perform reduction on the CPU
+            _vectorAddCPU.ComputeSum(out cpuResult);
+
+        if (_compareCPU && cpuResult != null)
         {
-            float[] cpuSum = ComputeCPUSum();
-            if (!CompareResults(cpuSum))
+            if (!CompareResults(cpuResult))
             {
                 Debug.LogError("GPU and CPU results do not match!");
             }
