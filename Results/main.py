@@ -180,6 +180,28 @@ def _calculate_speedup_values(cuda_avg, cuda_std, metric_avg, metric_std):
     return speedup, dz
 
 
+def save_legend(handles, labels, base_output_file_name, args):
+    """Save the legend to a separate file."""
+    if not handles or not labels:
+        print("No handles or labels to save in legend.")
+        return
+    # Create a new figure for the legend
+    fig_legend = plt.figure(figsize=(4, len(labels) * 0.5))
+    ax_legend = fig_legend.add_subplot(111)
+    ax_legend.axis('off')  # Hide the axes
+    ax_legend.legend(handles,
+                     labels,
+                     loc='center',
+                     fontsize=font_size_ticks,
+                     ncol=1)
+    # Generate legend filename
+    legend_filename = f"Legend.png"
+    legend_out = os.path.join(args.output, legend_filename)
+    # Save the legend figure
+    fig_legend.savefig(legend_out, dpi=args.resolution, bbox_inches='tight')
+    plt.close(fig_legend)  # Properly close the figure
+
+
 def plot_metrics(args,
                  data_dict,
                  title_suffix,
@@ -187,7 +209,8 @@ def plot_metrics(args,
                  output_filename,
                  is_speedup=False,
                  xlim=None,
-                 ylim=None):
+                 ylim=None,
+                 do_save_legend=False):
     """Plot metrics (average times or speedups)."""
     plt.figure(figsize=(12, 8), dpi=args.resolution)
     lines = []
@@ -228,15 +251,19 @@ def plot_metrics(args,
     # Set labels and title
     plt.xlabel('Array Size', fontsize=font_size_title, labelpad=10)
     plt.ylabel(ylabel, fontsize=font_size_title, labelpad=10)
-    plt.title(f"{args.title} - {title_suffix}",
-              fontsize=font_size_main_title,
-              pad=20)
+    plt.title(f"{args.title}", fontsize=font_size_main_title, pad=20)
     plt.grid(True, which="both", ls="--", linewidth=0.5)
     plt.xscale('log')
+    plt.yscale('log')
 
     # Handle legend
     if args.legend:
         plt.legend(fontsize=font_size_ticks)
+    else:
+        if do_save_legend:
+            # Save the legend separately
+            handles, labels = plt.gca().get_legend_handles_labels()
+            save_legend(handles, labels, output_filename, args)
 
     # Set axis limits
     if xlim:
@@ -326,7 +353,7 @@ def main():
             'x': gl_data['ArraySize'],
             'y': gl_data['AverageExecutionTimeCS'],
             'yerr': gl_data['StandardDeviationCS'],
-            'label': 'Average Execution Time OpenGL CS',
+            'label': 'Average Execution Time OpenGL',
             'marker': 'o',
             'linestyle': 'dashed',
             'color': GL_COLOR
@@ -337,7 +364,7 @@ def main():
             'x': dx11_data['ArraySize'],
             'y': dx11_data['AverageExecutionTimeCS'],
             'yerr': dx11_data['StandardDeviationCS'],
-            'label': 'Average Execution Time DirectX 11 CS',
+            'label': 'Average Execution Time DirectX 11',
             'marker': 's',
             'linestyle': 'dashdot',
             'color': DX11_COLOR
@@ -374,7 +401,8 @@ def main():
                  execution_plot_filename,
                  is_speedup=False,
                  xlim=args.xlimAverage,
-                 ylim=args.ylimAverage)
+                 ylim=args.ylimAverage,
+                 do_save_legend=True)
     # Prepare data for speedup
     speedup_data_dict = {}
     if plot_gl:
@@ -388,7 +416,7 @@ def main():
                 'x': array_sizes_gl,
                 'y': speedup_gl,
                 'yerr': speedup_gl_err,
-                'label': 'Speedup OpenGL CS',
+                'label': 'Speedup OpenGL',
                 'marker': 'o',
                 'linestyle': 'dashed',
                 'color': GL_COLOR
@@ -404,7 +432,7 @@ def main():
                 'x': array_sizes_dx11,
                 'y': speedup_dx11,
                 'yerr': speedup_dx11_err,
-                'label': 'Speedup DirectX 11 CS',
+                'label': 'Speedup DirectX 11',
                 'marker': 's',
                 'linestyle': 'dashdot',
                 'color': DX11_COLOR
@@ -430,7 +458,7 @@ def main():
             cuda_data, cuda_data, 'AverageExecutionTimeCUDA',
             'StandardDeviationCUDA', 'AverageExecutionTimeCUDA',
             'StandardDeviationCUDA')
-        if speedup_cpu:
+        if speedup_cuda:
             speedup_data_dict['cuda'] = {
                 'plot': True,
                 'x': array_sizes_cuda,
