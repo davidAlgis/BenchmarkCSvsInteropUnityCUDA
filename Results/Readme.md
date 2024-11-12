@@ -55,9 +55,10 @@ python .\main.py -t "Performance Comparison - VectorAdd - 10000 Samples" -igl ".
 
 python .\main.py -t "Performance Comparison - WavesFDM - 10000 Samples" -igl ".\Results - 10000 Sample\ProfilingResults-WavesFDM-10000-OpenGLCore.csv" -idx ".\Results - 10000 Sample\ProfilingResults-WavesFDM-10000-Direct3D11.csv" -icu ".\Results - 10000 Sample\ProfilingResults-WavesFDM-10000-OpenGLCore.csv" -icp ".\Results - 10000 Sample\ProfilingResults-WavesFDM-10000-OpenGLCore.csv" -o ".\Results - 10000 Sample" -s False -l False
 
+python .\main.py -t "Performance Comparison - GetData - 10000 Samples" -igl ".\Results - 10000 Sample\ProfilingResults-GetData-10000-OpenGLCore.csv" -idx ".\Results - 10000 Sample\ProfilingResults-GetData-10000-Direct3D11.csv" -icu ".\Results - 10000 Sample\ProfilingResults-GetData-10000-OpenGLCore.csv" -icp ".\Results - 10000 Sample\ProfilingResults-GetData-10000-OpenGLCore.csv" -o ".\Results - 10000 Sample" -s False -l False
+
 python .\main.py -t "Performance Comparison - Reduce - 10000 Samples" -igl ".\Results - 10000 Sample\ProfilingResults-Reduce-10000-OpenGLCore.csv" -idx ".\Results - 10000 Sample\ProfilingResults-Reduce-10000-Direct3D11.csv" -icu ".\Results - 10000 Sample\ProfilingResults-Reduce-10000-OpenGLCore.csv" -icp ".\Results - 10000 Sample\ProfilingResults-Reduce-10000-OpenGLCore.csv" -o ".\Results - 10000 Sample" -s False -l False
 
-python .\main.py -t "Performance Comparison - GetData - 10000 Samples" -igl ".\Results - 10000 Sample\ProfilingResults-GetData-10000-OpenGLCore.csv" -idx ".\Results - 10000 Sample\ProfilingResults-GetData-10000-Direct3D11.csv" -icu ".\Results - 10000 Sample\ProfilingResults-GetData-10000-OpenGLCore.csv" -icp ".\Results - 10000 Sample\ProfilingResults-GetData-10000-OpenGLCore.csv" -o ".\Results - 10000 Sample" -s False -l False
 ```
 
 Here is one of the generated output plot:
