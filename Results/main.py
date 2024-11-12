@@ -10,9 +10,10 @@ GL_COLOR = (0.41, 0.71, 0.27)
 DX11_COLOR = (1, 0.43, 0.34)
 CUDA_COLOR = (0.12, 0.61, 0.73)
 CPU_COLOR = (1, 0.71, 0)
-font_size_main_title = 22
-font_size_title = 20
-font_size_ticks = 18
+font_size_main_title = 26
+font_size_title = 24
+font_size_ticks = 22
+thickness_lines = 3.0
 
 
 def str2bool(v):
@@ -189,11 +190,7 @@ def save_legend(handles, labels, base_output_file_name, args):
     fig_legend = plt.figure(figsize=(4, len(labels) * 0.5))
     ax_legend = fig_legend.add_subplot(111)
     ax_legend.axis('off')  # Hide the axes
-    ax_legend.legend(handles,
-                     labels,
-                     loc='center',
-                     fontsize=font_size_ticks,
-                     ncol=1)
+    ax_legend.legend(handles, labels, loc='center', ncol=1)
     # Generate legend filename
     legend_filename = f"Legend.png"
     legend_out = os.path.join(args.output, legend_filename)
@@ -240,7 +237,9 @@ def plot_metrics(args,
                             capsize=3,
                             linestyle=value['linestyle'],
                             color=value['color'],
-                            markersize=5)
+                            markersize=5,
+                            linewidth=thickness_lines,
+                            elinewidth=0.5)
         lines.append(line)
         labels.append(value['label'])
 
@@ -254,7 +253,7 @@ def plot_metrics(args,
     plt.title(f"{args.title}", fontsize=font_size_main_title, pad=20)
     plt.grid(True, which="both", ls="--", linewidth=0.5)
     plt.xscale('log')
-    plt.yscale('log')
+    # plt.yscale('log')
 
     # Handle legend
     if args.legend:
