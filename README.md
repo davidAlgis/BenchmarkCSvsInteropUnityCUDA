@@ -1,6 +1,6 @@
 # BenchmarkCSvsInteropUnityCUDA
 
-This repository propose four tests to benchmark the performances between Compute Shader of Unity against a tools of interoperability between Unity and CUDA: [InteropUnityCUDA](https://github.com/davidAlgis/InteropUnityCUDA).
+This repository propose four tests to benchmark the performances between Compute Shader of Unity against a tools of interoperability between Unity and CUDA: [InteropUnityCUDA](https://github.com/davidAlgis/InteropUnityCUDA). For more details about this project you can read our article [**_InteropUnityCUDA: A Tool for Interoperability Between Unity and CUDA_**](https://doi.org/10.1002/spe.3414).
 
 ## Tests Overview
 
